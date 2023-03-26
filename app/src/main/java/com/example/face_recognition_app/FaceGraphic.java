@@ -43,10 +43,13 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
 
     private volatile Face face;
 
-    FaceGraphic(GraphicOverlay overlay, Face face) {
+    private String label;
+
+    FaceGraphic(GraphicOverlay overlay, Face face, String label) {
         super(overlay);
 
         this.face = face;
+        this.label = label;
         final int selectedColor = Color.WHITE;
 
         facePositionPaint = new Paint();
@@ -90,78 +93,31 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
         float top = y - scale(face.getBoundingBox().height() / 2.0f);
         float right = x + scale(face.getBoundingBox().width() / 2.0f);
         float bottom = y + scale(face.getBoundingBox().height() / 2.0f);
+
         float lineHeight = ID_TEXT_SIZE + BOX_STROKE_WIDTH;
-        float yLabelOffset = (face.getTrackingId() == null) ? 0 : -lineHeight;
+        float yLabelOffset = (face.getTrackingId() == null) ? 0 : - lineHeight;
 
         // Decide color based on face ID
         int colorID = (face.getTrackingId() == null) ? 0 : Math.abs(face.getTrackingId() % NUM_COLORS);
 
         // Calculate width and height of label box
-        float textWidth = idPaints[colorID].measureText("ID: " + face.getTrackingId());
-        if (face.getSmilingProbability() != null) {
-            yLabelOffset -= lineHeight;
-            textWidth =
-                    Math.max(
-                            textWidth,
-                            idPaints[colorID].measureText(
-                                    String.format(Locale.US, "Happiness: %.2f", face.getSmilingProbability())));
-        }
-        if (face.getLeftEyeOpenProbability() != null) {
-            yLabelOffset -= lineHeight;
-            textWidth =
-                    Math.max(
-                            textWidth,
-                            idPaints[colorID].measureText(
-                                    String.format(
-                                            Locale.US, "Left eye open: %.2f", face.getLeftEyeOpenProbability())));
-        }
-        if (face.getRightEyeOpenProbability() != null) {
-            yLabelOffset -= lineHeight;
-            textWidth =
-                    Math.max(
-                            textWidth,
-                            idPaints[colorID].measureText(
-                                    String.format(
-                                            Locale.US, "Right eye open: %.2f", face.getRightEyeOpenProbability())));
-        }
+        float textWidth = idPaints[colorID].measureText(label);
 
-        yLabelOffset = yLabelOffset - 3 * lineHeight;
-        textWidth =
-                Math.max(
-                        textWidth,
-                        idPaints[colorID].measureText(
-                                String.format(Locale.US, "EulerX: %.2f", face.getHeadEulerAngleX())));
-        textWidth =
-                Math.max(
-                        textWidth,
-                        idPaints[colorID].measureText(
-                                String.format(Locale.US, "EulerY: %.2f", face.getHeadEulerAngleY())));
-        textWidth =
-                Math.max(
-                        textWidth,
-                        idPaints[colorID].measureText(
-                                String.format(Locale.US, "EulerZ: %.2f", face.getHeadEulerAngleZ())));
+
         // Draw labels
         canvas.drawRect(
                 left - BOX_STROKE_WIDTH,
                 top + yLabelOffset,
-                left + textWidth + (2 * BOX_STROKE_WIDTH),
+                left + (2 * BOX_STROKE_WIDTH) + textWidth,
                 top,
                 labelPaints[colorID]);
         yLabelOffset += ID_TEXT_SIZE;
         canvas.drawRect(left, top, right, bottom, boxPaints[colorID]);
         if (face.getTrackingId() != null) {
-            canvas.drawText("ID: " + face.getTrackingId(), left, top + yLabelOffset, idPaints[colorID]);
+            canvas.drawText(label, left, top - BOX_STROKE_WIDTH / 2, idPaints[colorID]);
             yLabelOffset += lineHeight;
         }
 
-        // Draws all face contours.
-        for (FaceContour contour : face.getAllContours()) {
-            for (PointF point : contour.getPoints()) {
-                canvas.drawCircle(
-                        translateX(point.x), translateY(point.y), FACE_POSITION_RADIUS, facePositionPaint);
-            }
-        }
 
         // Draws smiling and left/right eye open probabilities.
         if (face.getSmilingProbability() != null) {
@@ -173,70 +129,7 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
             yLabelOffset += lineHeight;
         }
 
-        FaceLandmark leftEye = face.getLandmark(FaceLandmark.LEFT_EYE);
-        if (face.getLeftEyeOpenProbability() != null) {
-            canvas.drawText(
-                    "Left eye open: " + String.format(Locale.US, "%.2f", face.getLeftEyeOpenProbability()),
-                    left,
-                    top + yLabelOffset,
-                    idPaints[colorID]);
-            yLabelOffset += lineHeight;
-        }
-        if (leftEye != null) {
-            float leftEyeLeft =
-                    translateX(leftEye.getPosition().x) - idPaints[colorID].measureText("Left Eye") / 2.0f;
-            canvas.drawRect(
-                    leftEyeLeft - BOX_STROKE_WIDTH,
-                    translateY(leftEye.getPosition().y) + ID_Y_OFFSET - ID_TEXT_SIZE,
-                    leftEyeLeft + idPaints[colorID].measureText("Left Eye") + BOX_STROKE_WIDTH,
-                    translateY(leftEye.getPosition().y) + ID_Y_OFFSET + BOX_STROKE_WIDTH,
-                    labelPaints[colorID]);
-            canvas.drawText(
-                    "Left Eye",
-                    leftEyeLeft,
-                    translateY(leftEye.getPosition().y) + ID_Y_OFFSET,
-                    idPaints[colorID]);
-        }
-
-        FaceLandmark rightEye = face.getLandmark(FaceLandmark.RIGHT_EYE);
-        if (face.getRightEyeOpenProbability() != null) {
-            canvas.drawText(
-                    "Right eye open: " + String.format(Locale.US, "%.2f", face.getRightEyeOpenProbability()),
-                    left,
-                    top + yLabelOffset,
-                    idPaints[colorID]);
-            yLabelOffset += lineHeight;
-        }
-        if (rightEye != null) {
-            float rightEyeLeft =
-                    translateX(rightEye.getPosition().x) - idPaints[colorID].measureText("Right Eye") / 2.0f;
-            canvas.drawRect(
-                    rightEyeLeft - BOX_STROKE_WIDTH,
-                    translateY(rightEye.getPosition().y) + ID_Y_OFFSET - ID_TEXT_SIZE,
-                    rightEyeLeft + idPaints[colorID].measureText("Right Eye") + BOX_STROKE_WIDTH,
-                    translateY(rightEye.getPosition().y) + ID_Y_OFFSET + BOX_STROKE_WIDTH,
-                    labelPaints[colorID]);
-            canvas.drawText(
-                    "Right Eye",
-                    rightEyeLeft,
-                    translateY(rightEye.getPosition().y) + ID_Y_OFFSET,
-                    idPaints[colorID]);
-        }
-
-//        canvas.drawText(
-//                "EulerX: " + face.getHeadEulerAngleX(), left, top + yLabelOffset, idPaints[colorID]);
-//        yLabelOffset += lineHeight;
-//        canvas.drawText(
-//                "EulerY: " + face.getHeadEulerAngleY(), left, top + yLabelOffset, idPaints[colorID]);
-//        yLabelOffset += lineHeight;
-//        canvas.drawText(
-//                "EulerZ: " + face.getHeadEulerAngleZ(), left, top + yLabelOffset, idPaints[colorID]);
-
         // Draw facial landmarks
-        drawFaceLandmark(canvas, FaceLandmark.LEFT_EYE);
-        drawFaceLandmark(canvas, FaceLandmark.RIGHT_EYE);
-        drawFaceLandmark(canvas, FaceLandmark.LEFT_CHEEK);
-        drawFaceLandmark(canvas, FaceLandmark.RIGHT_CHEEK);
     }
 
     private void drawFaceLandmark(Canvas canvas, @LandmarkType int landmarkType) {

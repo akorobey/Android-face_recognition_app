@@ -1,16 +1,20 @@
 package com.example.face_recognition_app;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.mlkit.common.MlKitException;
-
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageButton;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraInfoUnavailableException;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
@@ -21,15 +25,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.Switch;
-import android.widget.Toast;
-import android.widget.ToggleButton;
+import com.google.mlkit.common.MlKitException;
 
 import java.io.File;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
 
@@ -39,12 +39,16 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
     Button buttonCam;
     Button buttonFile;
+    ToggleButton facingSwitch;
+    ImageButton editMode;
+    boolean allowGrow = false;
     private PreviewView previewView;
     private GraphicOverlay graphicOverlay;
     @Nullable private ProcessCameraProvider cameraProvider;
     @Nullable private Preview previewUseCase;
     @Nullable private ImageAnalysis analysisUseCase;
     @Nullable private VisionImageProcessor imageProcessor;
+    FaceRecognitionModel recognizer;
     private int lensFacing = CameraSelector.LENS_FACING_BACK;
     private boolean needUpdateGraphicOverlayImageSourceInfo;
     private CameraSelector cameraSelector;
@@ -52,11 +56,13 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate");
+        Log.d(TAG, "Start face_recognition application");
         setContentView(R.layout.activity_main);
 
         buttonCam = (Button) findViewById(R.id.button_left);
         buttonFile = (Button) findViewById(R.id.button_right);
+        editMode = (ImageButton) findViewById(R.id.gallery_button);
+        //editMode.setBackgroundColor(Color.GREEN);
 
         previewView = findViewById(R.id.preview_view);
         if (previewView == null) {
@@ -67,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             Log.d(TAG, "graphicOverlay is null");
         }
         cameraSelector = new CameraSelector.Builder().requireLensFacing(lensFacing).build();
-        ToggleButton facingSwitch = findViewById(R.id.facing_switch);
+        facingSwitch = findViewById(R.id.facing_switch);
         facingSwitch.setOnCheckedChangeListener(this);
 
         if(allPermissionsGranted()){
@@ -78,7 +84,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                             this,
                             provider -> {
                                 cameraProvider = provider;
-                                bindAllCameraUseCases();
+                                try {
+                                    bindAllCameraUseCases();
+                                } catch (IOException | URISyntaxException e) {
+                                    throw new RuntimeException(e);
+                                }
                             });
         } else{
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
@@ -99,7 +109,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                                 this,
                                 provider -> {
                                     cameraProvider = provider;
-                                    bindAllCameraUseCases();
+                                    try {
+                                        bindAllCameraUseCases();
+                                    } catch (IOException | URISyntaxException e) {
+                                        throw new RuntimeException(e);
+                                    }
                                 });
             } else {
                 Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
@@ -136,6 +150,15 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     }
 
+    public void setAllowGrow(View view) {
+        allowGrow = !allowGrow;
+        if (allowGrow) {
+            editMode.getBackground().setColorFilter(Color.parseColor("#59ff00"), PorterDuff.Mode.MULTIPLY);
+        } else {
+            editMode.getBackground().setColorFilter(Color.parseColor("#ff0000"), PorterDuff.Mode.MULTIPLY);
+        }
+    }
+
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (cameraProvider == null) {
@@ -157,6 +180,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             }
         } catch (CameraInfoUnavailableException e) {
             // Falls through
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
         }
         Toast.makeText(
                         getApplicationContext(),
@@ -168,7 +193,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @Override
     public void onResume() {
         super.onResume();
-        bindAllCameraUseCases();
+        try {
+            bindAllCameraUseCases();
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -187,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         }
     }
 
-    private void bindAllCameraUseCases() {
+    private void bindAllCameraUseCases() throws IOException, URISyntaxException {
         if (cameraProvider != null) {
             // As required by CameraX API, unbinds all use cases before trying to re-bind any of them.
             cameraProvider.unbindAll();
@@ -210,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         previewUseCase.setSurfaceProvider(previewView.getSurfaceProvider());
         cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, previewUseCase);
     }
-    private void bindAnalysisUseCase() {
+    private void bindAnalysisUseCase() throws IOException, URISyntaxException {
         if (cameraProvider == null) {
             return;
         }
@@ -224,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         Log.i(TAG, "Using Face Detector Processor");
         imageProcessor = new FaceDetectorProcessor(this);
 
-        ImageAnalysis.Builder builder = new ImageAnalysis.Builder();
+        ImageAnalysis.Builder builder = new ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST);
         analysisUseCase = builder.build();
 
         needUpdateGraphicOverlayImageSourceInfo = true;

@@ -18,9 +18,11 @@ import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageProxy;
 import androidx.exifinterface.media.ExifInterface;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 
 /** Utils functions for bitmap conversions. */
 public class BitmapUtils {
@@ -47,6 +49,10 @@ public class BitmapUtils {
             Log.e("VisionProcessorBase", "Error: " + e.getMessage());
         }
         return null;
+    }
+
+    public static Bitmap getBitmap(String file) {
+        return BitmapFactory.decodeFile(file);
     }
 
     /** Converts a YUV_420_888 image from CameraX API to a bitmap. */

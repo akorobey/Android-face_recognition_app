@@ -17,6 +17,22 @@
 
     </androidx.camera.view.PreviewView>
 
+    <com.example.face_recognition_app.GraphicOverlay
+        android:id="@+id/graphic_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </com.example.face_recognition_app.GraphicOverlay>
+
+    <ImageButton
+        android:id="@+id/gallery_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:backgroundTint="#FF0000"
+        android:onClick="setAllowGrow"
+        app:layout_constraintEnd_toStartOf="@+id/facing_switch"
+        app:srcCompat="@drawable/face" />
+
     <ToggleButton
         android:id="@+id/facing_switch"
         android:layout_width="wrap_content"
@@ -24,16 +40,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1"
-        app:layout_constraintVertical_bias="0"
         app:layout_constraintStart_toEndOf="@+id/button_left"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <com.example.face_recognition_app.GraphicOverlay
-        android:id="@+id/graphic_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </com.example.face_recognition_app.GraphicOverlay>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0" />
 
 
     <Button
@@ -42,6 +51,7 @@
         android:layout_height="wrap_content"
         android:onClick="openFile"
         android:text="@string/take_photo"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -55,6 +65,7 @@
         android:layout_height="wrap_content"
         android:onClick="captureVideo"
         android:text="@string/start_capture"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/button_right"
         app:layout_constraintHorizontal_bias="0.5"

@@ -189,7 +189,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
                             if (originalCameraImage != null) {
                                 graphicOverlay.add(new CameraImageGraphic(graphicOverlay, originalCameraImage));
                             }
-                            VisionProcessorBase.this.onSuccess(results, graphicOverlay);
+                            VisionProcessorBase.this.onSuccess(originalCameraImage, results, graphicOverlay);
                             graphicOverlay.add(
                                     new InferenceInfoGraphic(
                                             graphicOverlay,
@@ -235,7 +235,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
     protected abstract Task<T> detectInImage(InputImage image);
 
-    protected abstract void onSuccess(@NonNull T results, @NonNull GraphicOverlay graphicOverlay);
+    protected abstract void onSuccess(@NonNull Bitmap originalCameraImage, @NonNull T results, @NonNull GraphicOverlay graphicOverlay);
 
     protected abstract void onFailure(@NonNull Exception e);
 }
