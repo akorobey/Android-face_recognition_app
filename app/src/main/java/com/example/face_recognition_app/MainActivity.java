@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         facingSwitch.setOnCheckedChangeListener(this);
 
         if(allPermissionsGranted()){
-            new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()))
+            new ViewModelProvider(this)
                     .get(CameraXViewModel.class)
                     .getProcessCameraProvider()
                     .observe(
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
-                new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()))
+                new ViewModelProvider(this)
                         .get(CameraXViewModel.class)
                         .getProcessCameraProvider()
                         .observe(

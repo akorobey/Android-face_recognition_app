@@ -1,13 +1,18 @@
 package com.example.face_recognition_app;
 
+import static android.content.Context.MODE_PRIVATE;
 import static com.example.face_recognition_app.MainActivity.TAG;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Pair;
+import android.widget.Toast;
 
 import org.checkerframework.checker.units.qual.A;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.DirectoryIteratorException;
@@ -29,35 +34,38 @@ public class FaceGallery {
     int id = 0;
 
     public FaceGallery(Context context, FaceRecognitionModel recModel) throws IOException, URISyntaxException {
-        System.out.println(context.getAssets().toString());
-        String file = Common.getResourcePath(context.getAssets().open("Korobeynikov Aleksei.jpg"), "Korobeynikov Aleksei", "jpg");
-        System.out.println(file);
-        ArrayList<Float> currentEmbeddings = recModel.run(BitmapUtils.getBitmap(file));
+        FileInputStream fin = null;
+        String [] faces = context.fileList();
+        for (int i = 0; i < faces.length; ++i) {
+            try {
+                fin = context.openFileInput(faces[i]);
+                byte[] bytes = new byte[fin.available()];
+                fin.read(bytes);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                String label = faces[i];
+                System.out.println(label);
+                ArrayList<Float> currentEmbeddings = recModel.run(bitmap);
+                identities = new ArrayList<GalleryObject>();
+                identities.add(new GalleryObject(currentEmbeddings, label, id));
+                id += 1;
+            }
+            catch(IOException ex) {
+                Toast.makeText(context, ex.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+            finally{
 
-        String label = "Korobeynikov Aleksei";
-        identities = new ArrayList<GalleryObject>();
-        identities.add(new GalleryObject(currentEmbeddings, label, id));
-        id += 1;
-        //System.out.println(Common.getDirectory(context.getAssets().open("gallery"), "gallery"));
-//        String[] files = context.getAssets().list("gallery");
-//        Stream<String> input = Arrays.stream(files);
-//        input.forEach(x -> System.out.println(x));
-//            try (DirectoryStream<Path> stream = Files.newDirectoryStream(
-//                    Common.getDirectory(context.getAssets().open("gallery"), "gallery"), "*.{jpg,png,jpeg}")) {
-//                for (Path file : stream) {
-//                    String label = file.getFileName().toString();
-//                    System.out.println(label);
-//                    System.out.println(file.toString());
-//                    //ArrayList<Float> currentEmbeddings = recModel.run(BitmapUtils.getBitmap(file.toString()));
-//                    //identities.add(new GalleryObject(currentEmbeddings, label, id));
-//                    //id += 1;
-//                }
-//            } catch (DirectoryIteratorException ex) {
-//                // I/O error encounted during the iteration, the cause is an IOException
-//                throw ex.getCause();
-//            }
+                try{
+                    if(fin!=null)
+                        fin.close();
+                }
+                catch(IOException ex){
+
+                    Toast.makeText(context, ex.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
     }
-
 
     public static float scalarProduct(ArrayList<Float> vec1, ArrayList<Float> vec2) {
         assert(vec1.size() == vec2.size());

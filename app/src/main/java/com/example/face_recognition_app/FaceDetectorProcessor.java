@@ -1,5 +1,6 @@
 package com.example.face_recognition_app;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -8,6 +9,7 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.icu.text.AlphabeticIndex;
+import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 
@@ -24,6 +26,7 @@ import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.google.mlkit.vision.face.FaceLandmark;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -67,22 +70,47 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         return detector.process(image);
     }
 
+    public void showDialog(Bitmap faceImage) {
+        AddFaceDialogFragment dialog = new AddFaceDialogFragment();
+        Bundle args = new Bundle();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        faceImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        faceImage.recycle();
+        args.putByteArray("face_image", byteArray);
+        dialog.setArguments(args);
+        Activity main = (Activity) mainApp;
+        dialog.show(main.getFragmentManager(), "dialog");
+    }
+
+    public void startAskToSaveActivity(Bitmap faceImage) {
+        // get ByteArray from Bitmap
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        faceImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+
+        Intent newWindow = new Intent(mainApp, AskToSave.class);
+        newWindow.putExtra("new_face", byteArray);
+        mainApp.startActivity(newWindow);
+    }
+
     @Override
     protected void onSuccess(@NonNull Bitmap originalCameraImage, @NonNull List<Face> faces, @NonNull GraphicOverlay graphicOverlay) {
         ArrayList<ArrayList<Float>> allEmb = new ArrayList<ArrayList<Float>>();
         for (Face face : faces) {
             Bitmap rotatedFace = getFaceFromImage(originalCameraImage, face);
-//            Intent newWindow = new Intent(mainApp, AskToSave.class);
-//            newWindow.putExtra("new_face", rotatedFace);
-//            mainApp.startActivity(newWindow);
             ArrayList<Float> embeddings = recognizer.run(rotatedFace);
             allEmb.add(embeddings);
         }
         // TODO Compare embeddings with emb of faces in face gallery
         ArrayList<Pair<Integer, Float>> matches = gallery.getIDsByEmbeddings(allEmb);
-        for (Pair<Integer, Float>match: matches) {
-            System.out.println(match);
+        for (int i = 0; i < matches.size(); ++i) {
+            if (matches.get(i).first == gallery.unknownId) {
+                //showDialog(getFaceFromImage(originalCameraImage, faces.get(i)));
+                startAskToSaveActivity(getFaceFromImage(originalCameraImage, faces.get(i)));
+            }
         }
+
 
         for (int i = 0; i < faces.size(); ++i) {
             graphicOverlay.add(new FaceGraphic(graphicOverlay, faces.get(i), gallery.getLabelByID(matches.get(i).first)));
