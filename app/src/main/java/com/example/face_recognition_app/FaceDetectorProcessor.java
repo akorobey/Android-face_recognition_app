@@ -113,6 +113,9 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                 }
             }
         }
+        if (mainApp1.allowGrow) {
+            mainApp1.editMode.performClick();
+        }
 
 
         for (int i = 0; i < faces.size(); ++i) {

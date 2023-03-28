@@ -1,8 +1,6 @@
 package com.example.face_recognition_app;
 
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -41,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     Button buttonFile;
     ToggleButton facingSwitch;
     ImageButton editMode;
+    ImageButton changeCamera;
     boolean allowGrow = false;
     private PreviewView previewView;
     private GraphicOverlay graphicOverlay;
@@ -62,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         buttonCam = (Button) findViewById(R.id.button_left);
         buttonFile = (Button) findViewById(R.id.button_right);
         editMode = (ImageButton) findViewById(R.id.gallery_button);
+        changeCamera = (ImageButton) findViewById(R.id.switch_camera);
         //editMode.setBackgroundColor(Color.GREEN);
 
         previewView = findViewById(R.id.preview_view);
@@ -73,8 +73,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             Log.d(TAG, "graphicOverlay is null");
         }
         cameraSelector = new CameraSelector.Builder().requireLensFacing(lensFacing).build();
-        facingSwitch = findViewById(R.id.facing_switch);
-        facingSwitch.setOnCheckedChangeListener(this);
 
         if(allPermissionsGranted()){
             new ViewModelProvider(this)
@@ -152,11 +150,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     public void setAllowGrow(View view) {
         allowGrow = !allowGrow;
-        if (allowGrow) {
-            editMode.getBackground().setColorFilter(Color.parseColor("#59ff00"), PorterDuff.Mode.MULTIPLY);
-        } else {
-            editMode.getBackground().setColorFilter(Color.parseColor("#ff0000"), PorterDuff.Mode.MULTIPLY);
-        }
+//        if (allowGrow) {
+//            editMode.getBackground().setColorFilter(Color.parseColor("#59ff00"), PorterDuff.Mode.MULTIPLY);
+//        } else {
+//            editMode.getBackground().setColorFilter(Color.parseColor("#ff0000"), PorterDuff.Mode.MULTIPLY);
+//        }
 
     }
 
@@ -285,5 +283,35 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 });
 
         cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, analysisUseCase);
+    }
+
+    public void changeCamera(View view) {
+        if (cameraProvider == null) {
+            return;
+        }
+        int newLensFacing =
+                lensFacing == CameraSelector.LENS_FACING_FRONT
+                        ? CameraSelector.LENS_FACING_BACK
+                        : CameraSelector.LENS_FACING_FRONT;
+        CameraSelector newCameraSelector =
+                new CameraSelector.Builder().requireLensFacing(newLensFacing).build();
+        try {
+            if (cameraProvider.hasCamera(newCameraSelector)) {
+                Log.d(TAG, "Set facing to " + newLensFacing);
+                lensFacing = newLensFacing;
+                cameraSelector = newCameraSelector;
+                bindAllCameraUseCases();
+                return;
+            }
+        } catch (CameraInfoUnavailableException e) {
+            // Falls through
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        Toast.makeText(
+                        getApplicationContext(),
+                        "This device does not have lens with facing: " + newLensFacing,
+                        Toast.LENGTH_SHORT)
+                .show();
     }
 }
