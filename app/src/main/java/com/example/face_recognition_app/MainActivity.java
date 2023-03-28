@@ -157,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         } else {
             editMode.getBackground().setColorFilter(Color.parseColor("#ff0000"), PorterDuff.Mode.MULTIPLY);
         }
+
     }
 
     @Override

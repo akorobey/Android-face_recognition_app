@@ -104,10 +104,13 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         }
         // TODO Compare embeddings with emb of faces in face gallery
         ArrayList<Pair<Integer, Float>> matches = gallery.getIDsByEmbeddings(allEmb);
+        MainActivity mainApp1 = (MainActivity) mainApp;
+
         for (int i = 0; i < matches.size(); ++i) {
             if (matches.get(i).first == gallery.unknownId) {
-                //showDialog(getFaceFromImage(originalCameraImage, faces.get(i)));
-                startAskToSaveActivity(getFaceFromImage(originalCameraImage, faces.get(i)));
+                if (mainApp1.allowGrow) {
+                    startAskToSaveActivity(getFaceFromImage(originalCameraImage, faces.get(i)));
+                }
             }
         }
 
@@ -118,8 +121,8 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     }
 
     protected  Bitmap getFaceFromImage(Bitmap source, Face face) {
-        int inputWidth = recognizer.inputWidth;
-        int inputHeight = recognizer.inputHeight;
+        int inputWidth = source.getWidth();
+        int inputHeight = source.getHeight();
         Rect faceRect = AlignTransform.enlargeFaceRoi(face.getBoundingBox(), inputWidth, inputHeight);
         int faceRoiWidth = faceRect.width();
         int faceRoiHeight = faceRect.height();

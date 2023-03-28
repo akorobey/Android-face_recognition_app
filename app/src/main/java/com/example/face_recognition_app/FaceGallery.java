@@ -30,22 +30,22 @@ public class FaceGallery {
     float unknownDistance = 1.0F;
     ArrayList<GalleryObject> identities = null;
 
-    float distanceThreshold = 0.7f;
+    float distanceThreshold = 0.5f;
     int id = 0;
 
     public FaceGallery(Context context, FaceRecognitionModel recModel) throws IOException, URISyntaxException {
         FileInputStream fin = null;
         String [] faces = context.fileList();
+        identities = new ArrayList<GalleryObject>();
         for (int i = 0; i < faces.length; ++i) {
             try {
                 fin = context.openFileInput(faces[i]);
                 byte[] bytes = new byte[fin.available()];
                 fin.read(bytes);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                String label = faces[i];
+                String label = faces[i].substring(0, faces[i].lastIndexOf('.'));
                 System.out.println(label);
                 ArrayList<Float> currentEmbeddings = recModel.run(bitmap);
-                identities = new ArrayList<GalleryObject>();
                 identities.add(new GalleryObject(currentEmbeddings, label, id));
                 id += 1;
             }
@@ -53,18 +53,16 @@ public class FaceGallery {
                 Toast.makeText(context, ex.getMessage(), Toast.LENGTH_SHORT).show();
             }
             finally{
-
                 try{
                     if(fin!=null)
                         fin.close();
                 }
                 catch(IOException ex){
-
                     Toast.makeText(context, ex.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         }
-
+        System.out.println("Size of identities = " + identities.size() + " " + id);
     }
 
     public static float scalarProduct(ArrayList<Float> vec1, ArrayList<Float> vec2) {
@@ -124,7 +122,6 @@ public class FaceGallery {
         
         return matches;
     }
-
 
     public int size() {
         return identities.size();
