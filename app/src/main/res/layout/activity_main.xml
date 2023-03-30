@@ -22,12 +22,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.example.face_recognition_app.GraphicOverlay
+    <com.yadro.face_recognition_app.GraphicOverlay
         android:id="@+id/graphic_overlay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-    </com.example.face_recognition_app.GraphicOverlay>
+    </com.yadro.face_recognition_app.GraphicOverlay>
 
     <ImageButton
         android:id="@+id/settings"

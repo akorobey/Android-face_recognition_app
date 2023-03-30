@@ -3,11 +3,19 @@ plugins {
 }
 
 android {
-    namespace 'com.example.face_recognition_app'
+    signingConfigs {
+        release {
+            storeFile file('C:\\Users\\a.korobeynikov\\AndroidStudioProjects\\keystores\\face_app_keystore.jks')
+            storePassword 'alex8686'
+            keyAlias 'MARCEL'
+            keyPassword 'alex8686'
+        }
+    }
+    namespace 'com.yadro.face_recognition_app'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.face_recognition_app"
+        applicationId "com.yadro.face_recognition_app"
         minSdk 30
         targetSdk 33
         versionCode 1
@@ -31,6 +39,7 @@ android {
             ndk {
                 abiFilters "arm64-v8a"// "x86_64"
             }
+            signingConfig signingConfigs.release
         }
         debug {
             ndk {
