@@ -9,7 +9,7 @@ public class Settings extends AppCompatActivity {
 
     RecyclerView settings;
 
-    String [] allSettings = {"Управление галереей", "Выбор устройства"};
+    String [] allSettings = {"Управление галереей", "Управление мониторами"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

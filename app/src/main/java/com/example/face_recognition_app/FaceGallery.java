@@ -44,7 +44,6 @@ public class FaceGallery {
                 fin.read(bytes);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 String label = faces[i].substring(0, faces[i].lastIndexOf('.'));
-                System.out.println(label);
                 ArrayList<Float> currentEmbeddings = recModel.run(bitmap);
                 identities.add(new GalleryObject(currentEmbeddings, label, id));
                 id += 1;
@@ -62,7 +61,6 @@ public class FaceGallery {
                 }
             }
         }
-        System.out.println("Size of identities = " + identities.size() + " " + id);
     }
 
     public static float scalarProduct(ArrayList<Float> vec1, ArrayList<Float> vec2) {
@@ -95,10 +93,7 @@ public class FaceGallery {
 
         for (int i = 0; i < embeddings.size(); i++) {
             for (int k = 0; k < identities.size(); ++k) {
-                System.out.println("Embeddings from gallery : " + identities.get(k).embeddings);
-                System.out.println("Embeddings from camera : " + embeddings.get(i));
                 distances[i][k] = computeReidDistance(embeddings.get(i), identities.get(k).embeddings);
-                System.out.println(distances[i][k]);
             }
         }
         ArrayList<Integer> busy = new ArrayList<Integer>();

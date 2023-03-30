@@ -52,12 +52,22 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     private int lensFacing = CameraSelector.LENS_FACING_BACK;
     private boolean needUpdateGraphicOverlayImageSourceInfo;
     private CameraSelector cameraSelector;
+    public static final String OPENCV_LIBRARY_NAME = "opencv_java4";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Start face_recognition application");
         setContentView(R.layout.activity_main);
+
+        try{
+            System.loadLibrary(OPENCV_LIBRARY_NAME);
+            Log.i(TAG, "Load OpenCV library");
+        } catch (UnsatisfiedLinkError e) {
+            Log.e("UnsatisfiedLinkError",
+                    "Failed to load native OpenCV libraries\n" + e.toString());
+            System.exit(1);
+        }
 
         buttonCam = (Button) findViewById(R.id.button_left);
         buttonFile = (Button) findViewById(R.id.button_right);

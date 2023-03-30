@@ -26,7 +26,7 @@ import java.util.TimerTask;
 
 /**
  * Abstract base class for vision frame processors. Subclasses need to implement {@link
- * #onSuccess(Object, GraphicOverlay)} to define what they want to with the detection results and
+ * #onSuccess(Bitmap, Object, GraphicOverlay)} to define what they want to with the detection results and
  * {@link #detectInImage(InputImage)} to specify the detector object.
  *
  * @param <T> The type of the detected feature.
@@ -39,6 +39,8 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
     private final ActivityManager activityManager;
     private final Timer fpsTimer = new Timer();
     private final ScopedExecutor executor;
+    private Presenter presenter;
+    public static final String PRESENTER_LIBRARY_NAME = "presenter";
 
     // Whether this processor is already shut down
     private boolean isShutdown;
@@ -82,6 +84,15 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
                 },
                 /* delay= */ 0,
                 /* period= */ 1000);
+        try{
+            System.loadLibrary(PRESENTER_LIBRARY_NAME);
+            Log.i(TAG, "Load presenter library");
+        } catch (UnsatisfiedLinkError e) {
+            Log.e("UnsatisfiedLinkError",
+                    "Failed to load native filters libraries\n" + e.toString());
+            System.exit(1);
+        }
+        presenter = new Presenter("");
     }
 
     // -----------------Code for processing single still image----------------------------------------
@@ -187,7 +198,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
                             graphicOverlay.clear();
                             if (originalCameraImage != null) {
-                                graphicOverlay.add(new CameraImageGraphic(graphicOverlay, originalCameraImage));
+                                graphicOverlay.add(new CameraImageGraphic(graphicOverlay, originalCameraImage, presenter));
                             }
                             VisionProcessorBase.this.onSuccess(originalCameraImage, results, graphicOverlay);
                             graphicOverlay.add(
