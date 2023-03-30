@@ -1,5 +1,6 @@
 package com.example.face_recognition_app;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -313,5 +314,10 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                         "This device does not have lens with facing: " + newLensFacing,
                         Toast.LENGTH_SHORT)
                 .show();
+    }
+
+    public void openSettings(View view) {
+        Intent newWindow = new Intent(this, Settings.class);
+        startActivity(newWindow);
     }
 }

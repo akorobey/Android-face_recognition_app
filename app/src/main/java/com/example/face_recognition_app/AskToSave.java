@@ -72,5 +72,6 @@ public class AskToSave extends AppCompatActivity {
                 Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
+        onBackPressed();
     }
 }

@@ -17,6 +17,11 @@
 
     </androidx.camera.view.PreviewView>
 
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <com.example.face_recognition_app.GraphicOverlay
         android:id="@+id/graphic_overlay"
         android:layout_width="wrap_content"
@@ -28,6 +33,7 @@
         android:id="@+id/settings"
         android:layout_width="70dp"
         android:layout_height="70dp"
+        android:onClick="openSettings"
         android:background="@drawable/button_shape_neitral_oval"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

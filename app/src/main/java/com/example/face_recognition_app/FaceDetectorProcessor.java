@@ -102,13 +102,13 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
             ArrayList<Float> embeddings = recognizer.run(rotatedFace);
             allEmb.add(embeddings);
         }
-        // TODO Compare embeddings with emb of faces in face gallery
+
         ArrayList<Pair<Integer, Float>> matches = gallery.getIDsByEmbeddings(allEmb);
         MainActivity mainApp1 = (MainActivity) mainApp;
 
         for (int i = 0; i < matches.size(); ++i) {
             if (matches.get(i).first == gallery.unknownId) {
-                if (mainApp1.allowGrow) {
+                if (mainApp1.allowGrow || mainApp1.editMode.isPressed()) {
                     startAskToSaveActivity(getFaceFromImage(originalCameraImage, faces.get(i)));
                 }
             }

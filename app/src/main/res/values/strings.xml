@@ -4,4 +4,5 @@
     <string name="take_photo">Take Photo</string>
     <string name="start_capture">Start Capture</string>
     <string name="stop_capture">Stop Capture</string>
+    <string name="settings">Настройки <u>underline</u>.</string>
 </resources>
