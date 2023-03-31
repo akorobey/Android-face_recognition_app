@@ -1,5 +1,8 @@
 package com.yadro.face_recognition_app;
 
+import static com.google.common.primitives.Floats.max;
+import static com.google.common.primitives.Floats.min;
+
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -84,7 +87,6 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
         // Draws a circle at the position of the detected face, with the face's track id below.
         float x = translateX(face.getBoundingBox().centerX());
         float y = translateY(face.getBoundingBox().centerY());
-//        canvas.drawCircle(x, y, FACE_POSITION_RADIUS, facePositionPaint);
 
         // Calculate positions.
         float left = x - scale(face.getBoundingBox().width() / 2.0f);
@@ -103,16 +105,17 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
 
 
         // Draw labels
-        canvas.drawRect(
+        drawRect(
+                canvas,
                 left - BOX_STROKE_WIDTH,
                 top + yLabelOffset,
-                left + (2 * BOX_STROKE_WIDTH) + textWidth,
-                top,
+                clip(left, 0, canvas.getWidth()) + (2 * BOX_STROKE_WIDTH) + textWidth,
+                max(top, lineHeight),
                 labelPaints[colorID]);
         yLabelOffset += ID_TEXT_SIZE;
-        canvas.drawRect(left, top, right, bottom, boxPaints[colorID]);
+        drawRect(canvas, left, top, right, bottom, boxPaints[colorID]);
         if (face.getTrackingId() != null) {
-            canvas.drawText(label, left, top - BOX_STROKE_WIDTH / 2, idPaints[colorID]);
+            drawText(canvas, label, left, max(top, lineHeight) - BOX_STROKE_WIDTH / 2, idPaints[colorID]);
             yLabelOffset += lineHeight;
         }
 

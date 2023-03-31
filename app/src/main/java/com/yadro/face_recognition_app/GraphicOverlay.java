@@ -9,6 +9,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +60,7 @@ public class GraphicOverlay extends View {
      * instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
      */
     public abstract static class Graphic {
-        private GraphicOverlay overlay;
+        protected GraphicOverlay overlay;
 
         public Graphic(GraphicOverlay overlay) {
             this.overlay = overlay;
@@ -81,11 +83,23 @@ public class GraphicOverlay extends View {
 
         protected void drawRect(
                 Canvas canvas, float left, float top, float right, float bottom, Paint paint) {
-            canvas.drawRect(left, top, right, bottom, paint);
+            canvas.drawRect(
+                    clip(left, 0 , canvas.getWidth()),
+                    clip(top, 0, canvas.getHeight()),
+                    clip(right, 0, canvas.getWidth()),
+                    clip(bottom, 0, canvas.getHeight()),
+                    paint);
         }
 
         protected void drawText(Canvas canvas, String text, float x, float y, Paint paint) {
-            canvas.drawText(text, x, y, paint);
+            canvas.drawText(text,
+                            clip(x, 0, canvas.getWidth()),
+                            clip(y, 0, canvas.getHeight()),
+                            paint);
+        }
+
+        protected float clip(float value, float lowerBorder, float upperBorder) {
+            return Floats.min(Floats.max(value, lowerBorder), upperBorder);
         }
 
         /** Adjusts the supplied value from the image scale to the view scale. */
