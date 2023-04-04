@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -66,15 +67,16 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         }
         String device = mainApp.getSharedPreferences("Settings", MODE_PRIVATE).getString("Device", "CPU");
         int threads = mainApp.getSharedPreferences("Settings", MODE_PRIVATE).getInt("Threads", 1);
+
         recognizer = new FaceRecognitionModel(modelFile, device, threads);
         gallery = new FaceGallery(context, recognizer);
     }
     public Task<List<Face>> detectInImage(Bitmap image) {
         // Some resize before provide to detector
-        Bitmap resized = Bitmap.createScaledBitmap(image, (int) (image.getWidth() / scale), (int) (image.getHeight() / scale), true);
+        //Bitmap resized = Bitmap.createScaledBitmap(image, (int) (image.getWidth() / scale), (int) (image.getHeight() / scale), true);
 
-        System.out.println("Size of image before DETECTOR = " + resized.getWidth() + "x" + resized.getHeight());
-        return detector.process(InputImage.fromBitmap(resized, 0));
+        System.out.println("Size of image before DETECTOR = " + image.getWidth() + "x" + image.getHeight());
+        return detector.process(InputImage.fromBitmap(image, 0));
     }
 
     public void startAskToSaveActivity(Bitmap faceImage) {
@@ -99,17 +101,21 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         }
 
         ArrayList<Pair<Integer, Float>> matches = gallery.getIDsByEmbeddings(allEmb);
-        MainActivity mainApp1 = (MainActivity) mainApp;
 
+        boolean allow_grow = mainApp.getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("AllowGrow", false);
+        System.out.println("Allow grow = " + allow_grow);
         for (int i = 0; i < matches.size(); ++i) {
             if (matches.get(i).first == gallery.unknownId) {
-                if (mainApp1.allowGrow || mainApp1.editMode.isPressed()) {
+                if (allow_grow) {
                     startAskToSaveActivity(getFaceFromImage(originalCameraImage, faces.get(i)));
                 }
             }
         }
-        if (mainApp1.allowGrow) {
-            mainApp1.editMode.performClick();
+        if (allow_grow) {
+            SharedPreferences settings = mainApp.getSharedPreferences("Settings", MODE_PRIVATE);
+            SharedPreferences.Editor prefEditor = settings.edit();
+            prefEditor.putBoolean("AllowGrow", false);
+            prefEditor.apply();
         }
 
 
@@ -121,7 +127,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     protected  Bitmap getFaceFromImage(Bitmap source, Face face) {
         int inputWidth = source.getWidth();
         int inputHeight = source.getHeight();
-        Rect faceRect = AlignTransform.enlargeFaceRoi(face.getBoundingBox(), inputWidth, inputHeight);
+        Rect faceRect = AlignTransform.enlargeFaceRoi(face.getBoundingBox(), inputWidth, inputHeight, 1.0f);
         PointF rotationCenter = new PointF((faceRect.left + faceRect.right) * 0.5f, (faceRect.top + faceRect.bottom) * 0.5f);
 
         FaceLandmark leftEye = face.getLandmark(FaceLandmark.LEFT_EYE);

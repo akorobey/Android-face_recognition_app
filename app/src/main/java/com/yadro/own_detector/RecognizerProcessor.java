@@ -5,6 +5,7 @@ import static com.yadro.utils.Common.getResourcePath;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -96,7 +97,7 @@ public class RecognizerProcessor implements VisionImageProcessor {
     protected  Bitmap getFaceFromImage(Bitmap source, BBox box) {
         int inputWidth = source.getWidth();
         int inputHeight = source.getHeight();
-        Rect faceRect = AlignTransform.enlargeFaceRoi(box.face, inputWidth, inputHeight);
+        Rect faceRect = AlignTransform.enlargeFaceRoi(box.face, inputWidth, inputHeight, 1.2f);
         PointF rotationCenter = new PointF((faceRect.left + faceRect.right) * 0.5f, (faceRect.top + faceRect.bottom) * 0.5f);
 
         PointF leftEye = box.leftEye;
@@ -150,17 +151,21 @@ public class RecognizerProcessor implements VisionImageProcessor {
         }
 
         ArrayList<Pair<Integer, Float>> matches = gallery.getIDsByEmbeddings(allEmb);
-        MainActivity mainApp1 = (MainActivity) mainApp;
+
+        boolean allow_grow = mainApp.getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("AllowGrow", false);
 
         for (int i = 0; i < matches.size(); ++i) {
             if (matches.get(i).first == gallery.unknownId) {
-                if (mainApp1.allowGrow || mainApp1.editMode.isPressed()) {
+                if (allow_grow) {
                     startAskToSaveActivity(getFaceFromImage(bitmap, boxes.get(i)));
                 }
             }
         }
-        if (mainApp1.allowGrow) {
-            mainApp1.editMode.performClick();
+        if (allow_grow) {
+            SharedPreferences settings = mainApp.getSharedPreferences("Settings", MODE_PRIVATE);
+            SharedPreferences.Editor prefEditor = settings.edit();
+            prefEditor.putBoolean("AllowGrow", false);
+            prefEditor.apply();
         }
         long endDetectorTime = SystemClock.elapsedRealtime();
         long currentDetectorLatencyMs = endDetectorTime - startDetectorTime;
@@ -174,7 +179,8 @@ public class RecognizerProcessor implements VisionImageProcessor {
 
         for (int i = 0; i < boxes.size(); ++i) {
             graphicOverlay.add(new FaceGraphic(graphicOverlay,
-                               new Face(boxes.get(i).face, gallery.getLabelByID(matches.get(i).first))));
+                               new Face(AlignTransform.enlargeFaceRoi(boxes.get(i).face, bitmap.getWidth(),
+                                       bitmap.getHeight(), 1.2f), gallery.getLabelByID(matches.get(i).first))));
         }
 
         long endFrameTime = SystemClock.elapsedRealtime();

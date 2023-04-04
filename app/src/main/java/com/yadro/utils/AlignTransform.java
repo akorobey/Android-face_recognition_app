@@ -5,23 +5,21 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 
 public class AlignTransform {
-    static final private float roiEnlargeCoeff = 1.0f;
 
-    public static Rect enlargeFaceRoi(Rect roi, int width, int height) {
+    public static Rect enlargeFaceRoi(Rect roi, int width, int height, float roiEnlargeCoeff) {
         Rect enlargedRoi = new Rect();
         int inflationX = (Math.round(roi.width() * roiEnlargeCoeff) - roi.width()) / 2;
         int inflationY = (Math.round(roi.height() * roiEnlargeCoeff) - roi.height()) / 2;
-        enlargedRoi.left = (roi.left - inflationX) < 0 ? 0 : roi.left - inflationX;
-        enlargedRoi.top =  (roi.top - inflationY) < 0 ? 0 : roi.top - inflationY;
-        enlargedRoi.right = (roi.right + inflationX) > width ? width : roi.right + inflationX;
-        enlargedRoi.bottom = (roi.bottom + inflationY) > height ? height : roi.bottom + inflationY;
+        enlargedRoi.left = Math.max((roi.left - inflationX), 0);
+        enlargedRoi.top = Math.max((roi.top - inflationY), 0);
+        enlargedRoi.right = Math.min((roi.right + inflationX), width);
+        enlargedRoi.bottom = Math.min((roi.bottom + inflationY), height);
         return enlargedRoi;
     }
 
     public static double calculateRotationRad(PointF p0, PointF p1) {
         double rad = -Math.atan2(p0.y - p1.y, p1.x - p0.x);
-        double radNormed = rad - 2 * Math.PI * Math.floor((rad + Math.PI) / (2 * Math.PI));  // normalized to [0, 2*PI]
-        return radNormed;
+        return rad - 2 * Math.PI * Math.floor((rad + Math.PI) / (2 * Math.PI));
     }
 
     public static float[] rotatePoints(float[] points,

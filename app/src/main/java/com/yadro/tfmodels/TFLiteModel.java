@@ -71,7 +71,6 @@ abstract public class TFLiteModel<T> {
         } else if (device.equals("CPU")) {
             // if the GPU is not supported, run on CPU with specified number of threads
             options.setNumThreads(nthreads);
-            options.setUseNNAPI(true);
         } else {
             throw new IllegalArgumentException("Unknown device provided: " + device);
         }

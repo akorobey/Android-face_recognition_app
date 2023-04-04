@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
             prefEditor.putInt("Threads", 4);
             prefEditor.putString("Device", "CPU");
             prefEditor.putString("Algorithm", "MLKit");
+            prefEditor.putBoolean("AllowGrow", false);
             prefEditor.apply();
         }
 
@@ -178,7 +179,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setAllowGrow(View view) {
-        allowGrow = !allowGrow;
+        SharedPreferences.Editor prefEditor = settings.edit();
+        prefEditor.putBoolean("AllowGrow", true);
+        prefEditor.apply();
     }
 
     @Override
