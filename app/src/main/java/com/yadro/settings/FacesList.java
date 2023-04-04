@@ -1,9 +1,11 @@
-package com.yadro.face_recognition_app;
+package com.yadro.settings;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+
+import com.yadro.face_recognition_app.R;
 
 public class FacesList extends AppCompatActivity {
 

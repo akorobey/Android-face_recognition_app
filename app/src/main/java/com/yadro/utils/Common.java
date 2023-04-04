@@ -1,4 +1,4 @@
-package com.yadro.face_recognition_app;
+package com.yadro.utils;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package com.yadro.face_recognition_app;
+package com.yadro.gallery;
 
 import java.util.ArrayList;
 

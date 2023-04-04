@@ -1,6 +1,7 @@
-package com.yadro.face_recognition_app;
+package com.yadro.mlkit_detector;
 
-import android.app.Activity;
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -8,7 +9,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 
@@ -21,6 +21,14 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.google.mlkit.vision.face.FaceLandmark;
+import com.yadro.face_recognition_app.MainActivity;
+import com.yadro.gallery.AskToSave;
+import com.yadro.gallery.FaceGallery;
+import com.yadro.graphics.MLKitFaceGraphic;
+import com.yadro.graphics.GraphicOverlay;
+import com.yadro.tfmodels.FaceRecognitionModel;
+import com.yadro.utils.AlignTransform;
+import com.yadro.utils.Common;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,6 +40,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     private static final String TAG = "FaceDetectorProcessor";
     private final FaceDetector detector;
     FaceRecognitionModel recognizer;
+    float scale = 1.0f;
     FaceGallery gallery;
 
     private Context mainApp;
@@ -43,7 +52,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                 new FaceDetectorOptions.Builder()
                         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
                         .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
-                        .setMinFaceSize(0.15f)
+                        .setMinFaceSize(0.2f)
                         .enableTracking()
                         .build();
         detector = FaceDetection.getClient(options);
@@ -55,24 +64,17 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        recognizer = new FaceRecognitionModel(modelFile, 4);
+        String device = mainApp.getSharedPreferences("Settings", MODE_PRIVATE).getString("Device", "CPU");
+        int threads = mainApp.getSharedPreferences("Settings", MODE_PRIVATE).getInt("Threads", 1);
+        recognizer = new FaceRecognitionModel(modelFile, device, threads);
         gallery = new FaceGallery(context, recognizer);
     }
-    public Task<List<Face>> detectInImage(InputImage image) {
-        return detector.process(image);
-    }
+    public Task<List<Face>> detectInImage(Bitmap image) {
+        // Some resize before provide to detector
+        Bitmap resized = Bitmap.createScaledBitmap(image, (int) (image.getWidth() / scale), (int) (image.getHeight() / scale), true);
 
-    public void showDialog(Bitmap faceImage) {
-        AddFaceDialogFragment dialog = new AddFaceDialogFragment();
-        Bundle args = new Bundle();
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        faceImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        byte[] byteArray = stream.toByteArray();
-        faceImage.recycle();
-        args.putByteArray("face_image", byteArray);
-        dialog.setArguments(args);
-        Activity main = (Activity) mainApp;
-        dialog.show(main.getFragmentManager(), "dialog");
+        System.out.println("Size of image before DETECTOR = " + resized.getWidth() + "x" + resized.getHeight());
+        return detector.process(InputImage.fromBitmap(resized, 0));
     }
 
     public void startAskToSaveActivity(Bitmap faceImage) {
@@ -88,6 +90,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
 
     @Override
     protected void onSuccess(@NonNull Bitmap originalCameraImage, @NonNull List<Face> faces, @NonNull GraphicOverlay graphicOverlay) {
+        // TODO postprocess with scale to source image
         ArrayList<ArrayList<Float>> allEmb = new ArrayList<ArrayList<Float>>();
         for (Face face : faces) {
             Bitmap rotatedFace = getFaceFromImage(originalCameraImage, face);
@@ -111,7 +114,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
 
 
         for (int i = 0; i < faces.size(); ++i) {
-            graphicOverlay.add(new FaceGraphic(graphicOverlay, faces.get(i), gallery.getLabelByID(matches.get(i).first)));
+            graphicOverlay.add(new MLKitFaceGraphic(graphicOverlay, faces.get(i), gallery.getLabelByID(matches.get(i).first)));
         }
     }
 
@@ -119,8 +122,6 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         int inputWidth = source.getWidth();
         int inputHeight = source.getHeight();
         Rect faceRect = AlignTransform.enlargeFaceRoi(face.getBoundingBox(), inputWidth, inputHeight);
-        int faceRoiWidth = faceRect.width();
-        int faceRoiHeight = faceRect.height();
         PointF rotationCenter = new PointF((faceRect.left + faceRect.right) * 0.5f, (faceRect.top + faceRect.bottom) * 0.5f);
 
         FaceLandmark leftEye = face.getLandmark(FaceLandmark.LEFT_EYE);

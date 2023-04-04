@@ -1,4 +1,4 @@
-package com.yadro.face_recognition_app;
+package com.yadro.settings;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.yadro.face_recognition_app.R;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -1,10 +1,12 @@
-package com.yadro.face_recognition_app;
+package com.yadro.gallery;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Pair;
 import android.widget.Toast;
+
+import com.yadro.tfmodels.FaceRecognitionModel;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,7 +15,7 @@ import java.util.ArrayList;
 
 public class FaceGallery {
     String unknownLabel = "Unknown";
-    int unknownId = -1;
+    public int unknownId = -1;
     float unknownDistance = 1.0F;
     ArrayList<GalleryObject> identities = null;
 

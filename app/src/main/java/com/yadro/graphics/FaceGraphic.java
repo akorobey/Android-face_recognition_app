@@ -1,21 +1,13 @@
-package com.yadro.face_recognition_app;
+package com.yadro.graphics;
 
 import static com.google.common.primitives.Floats.max;
-import static com.google.common.primitives.Floats.min;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
-import com.google.mlkit.vision.face.Face;
-import com.google.mlkit.vision.face.FaceLandmark;
-import com.google.mlkit.vision.face.FaceLandmark.LandmarkType;
-import java.util.Locale;
+import com.yadro.tfmodels.Face;
 
-/**
- * Graphic instance for rendering face position, contour, and landmarks within the associated
- * graphic overlay view.
- */
 public class FaceGraphic extends GraphicOverlay.Graphic {
     private static final float FACE_POSITION_RADIUS = 8.0f;
     private static final float ID_TEXT_SIZE = 30.0f;
@@ -42,15 +34,12 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
     private final Paint[] boxPaints;
     private final Paint[] labelPaints;
 
-    private volatile Face face;
+    private Face face;
 
-    private String label;
-
-    FaceGraphic(GraphicOverlay overlay, Face face, String label) {
+    public FaceGraphic(GraphicOverlay overlay, Face face) {
         super(overlay);
 
         this.face = face;
-        this.label = label;
         final int selectedColor = Color.WHITE;
 
         facePositionPaint = new Paint();
@@ -85,23 +74,23 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
         }
 
         // Draws a circle at the position of the detected face, with the face's track id below.
-        float x = translateX(face.getBoundingBox().centerX());
-        float y = translateY(face.getBoundingBox().centerY());
+        float x = translateX(face.face.centerX());
+        float y = translateY(face.face.centerY());
 
         // Calculate positions.
-        float left = x - scale(face.getBoundingBox().width() / 2.0f);
-        float top = y - scale(face.getBoundingBox().height() / 2.0f);
-        float right = x + scale(face.getBoundingBox().width() / 2.0f);
-        float bottom = y + scale(face.getBoundingBox().height() / 2.0f);
+        float left = x - scale(face.face.width() / 2.0f);
+        float top = y - scale(face.face.height() / 2.0f);
+        float right = x + scale(face.face.width() / 2.0f);
+        float bottom = y + scale(face.face.height() / 2.0f);
 
         float lineHeight = ID_TEXT_SIZE + BOX_STROKE_WIDTH;
-        float yLabelOffset = (face.getTrackingId() == null) ? 0 : - lineHeight;
+        float yLabelOffset = - lineHeight;
 
         // Decide color based on face ID
-        int colorID = (face.getTrackingId() == null) ? 0 : Math.abs(face.getTrackingId() % NUM_COLORS);
+        int colorID = (int) Math.abs(Math.random() % NUM_COLORS);
 
         // Calculate width and height of label box
-        float textWidth = idPaints[colorID].measureText(label);
+        float textWidth = idPaints[colorID].measureText(face.label);
 
 
         // Draw labels
@@ -114,33 +103,9 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
                 labelPaints[colorID]);
         yLabelOffset += ID_TEXT_SIZE;
         drawRect(canvas, left, top, right, bottom, boxPaints[colorID]);
-        if (face.getTrackingId() != null) {
-            drawText(canvas, label, left, max(top, lineHeight) - BOX_STROKE_WIDTH / 2, idPaints[colorID]);
-            yLabelOffset += lineHeight;
-        }
+        drawText(canvas, face.label, left, max(top, lineHeight) - BOX_STROKE_WIDTH / 2, idPaints[colorID]);
+        yLabelOffset += lineHeight;
 
-
-        // Draws smiling and left/right eye open probabilities.
-        if (face.getSmilingProbability() != null) {
-            canvas.drawText(
-                    "Smiling: " + String.format(Locale.US, "%.2f", face.getSmilingProbability()),
-                    left,
-                    top + yLabelOffset,
-                    idPaints[colorID]);
-            yLabelOffset += lineHeight;
-        }
-
-        // Draw facial landmarks
     }
 
-    private void drawFaceLandmark(Canvas canvas, @LandmarkType int landmarkType) {
-        FaceLandmark faceLandmark = face.getLandmark(landmarkType);
-        if (faceLandmark != null) {
-            canvas.drawCircle(
-                    translateX(faceLandmark.getPosition().x),
-                    translateY(faceLandmark.getPosition().y),
-                    FACE_POSITION_RADIUS,
-                    facePositionPaint);
-        }
-    }
 }

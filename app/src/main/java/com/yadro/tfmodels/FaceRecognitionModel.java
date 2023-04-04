@@ -1,10 +1,12 @@
-package com.yadro.face_recognition_app;
+package com.yadro.tfmodels;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+
+import com.yadro.tfmodels.TFLiteModel;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Tensor;
@@ -29,8 +31,8 @@ public class FaceRecognitionModel extends TFLiteModel<ArrayList<Float>> {
     ArrayList<float[]> anchors = new ArrayList<>();
 
 
-    public FaceRecognitionModel(final String modelFile, final int nthreads) {
-        super(modelFile, nthreads);
+    public FaceRecognitionModel(final String modelFile, final String device, final int nthreads) {
+        super(modelFile, device, nthreads);
         getInputsOutputsInfo();
         imgProcessor =
                 new ImageProcessor.Builder()

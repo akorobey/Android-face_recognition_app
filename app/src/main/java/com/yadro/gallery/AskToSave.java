@@ -1,4 +1,4 @@
-package com.yadro.face_recognition_app;
+package com.yadro.gallery;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.yadro.face_recognition_app.R;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

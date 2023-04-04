@@ -1,4 +1,4 @@
-package com.yadro.face_recognition_app;
+package com.yadro.utils;
 
 /** Describing a frame info. */
 public class FrameMetadata {

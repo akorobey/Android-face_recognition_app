@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" app/s >
 
     <uses-feature android:name="android.hardware.camera" />
 
@@ -17,13 +17,13 @@
         android:theme="@style/Theme.Face_recognition_app"
         tools:targetApi="31">
         <activity
-            android:name=".FacesList"
+            android:name="com.yadro.settings.FacesList"
             android:exported="false" />
         <activity
-            android:name=".Settings"
+            android:name="com.yadro.settings.Settings"
             android:exported="false" />
         <activity
-            android:name=".AskToSave"
+            android:name="com.yadro.gallery.AskToSave"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

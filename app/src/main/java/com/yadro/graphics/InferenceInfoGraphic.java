@@ -1,4 +1,4 @@
-package com.yadro.face_recognition_app;
+package com.yadro.graphics;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -60,14 +60,12 @@ public class InferenceInfoGraphic extends GraphicOverlay.Graphic {
         // Draw FPS (if valid) and inference latency
         if (framesPerSecond != null) {
             canvas.drawText(
-                    "FPS: " + framesPerSecond + ", Frame latency: " + frameLatency + " ms",
+                    "FPS: " + framesPerSecond,
                     x,
                     y + TEXT_SIZE,
                     textPaint);
-        } else {
-            canvas.drawText("Frame latency: " + frameLatency + " ms", x, y + TEXT_SIZE, textPaint);
         }
-        canvas.drawText(
-                "Detector latency: " + detectorLatency + " ms", x, y + TEXT_SIZE * 2, textPaint);
+        canvas.drawText("Frame latency: " + frameLatency + " ms", x, y + TEXT_SIZE * 2, textPaint);
+        canvas.drawText("Detector latency: " + detectorLatency + " ms", x, y + TEXT_SIZE * 3, textPaint);
     }
 }

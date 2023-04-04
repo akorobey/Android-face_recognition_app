@@ -1,4 +1,4 @@
-package com.yadro.face_recognition_app;
+package com.yadro.mlkit_detector;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -19,7 +19,15 @@ import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageProxy;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskExecutors;
-import com.google.mlkit.vision.common.InputImage;
+import com.yadro.face_recognition_app.Presenter;
+import com.yadro.face_recognition_app.ScopedExecutor;
+import com.yadro.face_recognition_app.VisionImageProcessor;
+import com.yadro.graphics.CameraImageGraphic;
+import com.yadro.graphics.GraphicOverlay;
+import com.yadro.graphics.InferenceInfoGraphic;
+import com.yadro.utils.BitmapUtils;
+import com.yadro.utils.FrameMetadata;
+
 import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,7 +35,7 @@ import java.util.TimerTask;
 /**
  * Abstract base class for vision frame processors. Subclasses need to implement {@link
  * #onSuccess(Bitmap, Object, GraphicOverlay)} to define what they want to with the detection results and
- * {@link #detectInImage(InputImage)} to specify the detector object.
+ * {@link #detectInImage(Bitmap)} to specify the detector object.
  *
  * @param <T> The type of the detected feature.
  */
@@ -101,7 +109,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
         long frameStartMs = SystemClock.elapsedRealtime();
 
         requestDetectInImage(
-                InputImage.fromBitmap(bitmap, 0),
+                bitmap,
                 graphicOverlay,
                 /* originalCameraImage= */ null,
                 /* shouldShowFps= */ false,
@@ -119,11 +127,10 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
             return;
         }
 
-        Bitmap bitmap = null;
-        bitmap = BitmapUtils.getBitmap(image);
+        Bitmap bitmap = BitmapUtils.getBitmap(image);
 
         requestDetectInImage(
-                InputImage.fromMediaImage(image.getImage(), image.getImageInfo().getRotationDegrees()),
+                bitmap,
                 graphicOverlay,
                 /* originalCameraImage= */ bitmap,
                 /* shouldShowFps= */ true,
@@ -136,7 +143,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
     // -----------------Common processing logic-------------------------------------------------------
     private Task<T> requestDetectInImage(
-            final InputImage image,
+            final Bitmap image,
             final GraphicOverlay graphicOverlay,
             @Nullable final Bitmap originalCameraImage,
             boolean shouldShowFps,
@@ -244,7 +251,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
         minDetectorMs = Long.MAX_VALUE;
     }
 
-    protected abstract Task<T> detectInImage(InputImage image);
+    protected abstract Task<T> detectInImage(Bitmap image);
 
     protected abstract void onSuccess(@NonNull Bitmap originalCameraImage, @NonNull T results, @NonNull GraphicOverlay graphicOverlay);
 

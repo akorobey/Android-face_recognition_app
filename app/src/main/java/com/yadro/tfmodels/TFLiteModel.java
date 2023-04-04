@@ -1,7 +1,9 @@
-package com.yadro.face_recognition_app;
+package com.yadro.tfmodels;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+
+import com.yadro.utils.FrameMetadata;
 
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.gpu.CompatibilityList;
@@ -25,6 +27,7 @@ abstract public class TFLiteModel<T> {
     protected final Interpreter.Options options = new Interpreter.Options();
     protected final CompatibilityList compatList = new CompatibilityList();
     protected int nthreads;
+    protected String device = "CPU";
     protected int imageWidth;
     protected int imageHeight;
     protected int inputWidth;
@@ -44,8 +47,9 @@ abstract public class TFLiteModel<T> {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileChannel.size());
     }
 
-    public TFLiteModel(final String modelFile, final int nthreads) {
+    public TFLiteModel(final String modelFile, final String device, final int nthreads) {
         this.nthreads = nthreads;
+        this.device = device;
         try {
             model = loadModelFile(modelFile);
         } catch (IOException ex) {
@@ -53,25 +57,27 @@ abstract public class TFLiteModel<T> {
                     "Failed to load model asset file" + ex.toString());
             System.exit(1);
         }
+
         readModel(modelFile);
     }
 
-    protected void readModel(final String modelFile) {
+    protected void readModel(final String modelFile) throws IllegalArgumentException {
         Log.i(TAG, "Reading model");
-        if(compatList.isDelegateSupportedOnThisDevice()){
+        if(device.equals("GPU") && compatList.isDelegateSupportedOnThisDevice()){
             // if the device has a supported GPU, add the GPU delegate
             GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
             GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
             options.addDelegate(gpuDelegate);
-        } else {
-            // if the GPU is not supported, run on 4 threads
+        } else if (device.equals("CPU")) {
+            // if the GPU is not supported, run on CPU with specified number of threads
             options.setNumThreads(nthreads);
             options.setUseNNAPI(true);
+        } else {
+            throw new IllegalArgumentException("Unknown device provided: " + device);
         }
 
         interpreter = new Interpreter(model, options);
     }
-
     abstract protected void getInputsOutputsInfo();
 
     abstract protected TensorImage preprocess(Bitmap bitmap);

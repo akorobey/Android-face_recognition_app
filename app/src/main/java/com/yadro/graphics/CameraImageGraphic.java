@@ -1,7 +1,10 @@
-package com.yadro.face_recognition_app;
+package com.yadro.graphics;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+
+import com.yadro.face_recognition_app.Presenter;
+import com.yadro.graphics.GraphicOverlay;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
@@ -22,7 +25,7 @@ public class CameraImageGraphic extends GraphicOverlay.Graphic {
     public void draw(Canvas canvas) {
         Mat frame = new Mat();
         Utils.bitmapToMat(bitmap, frame);
-        presenter.drawGraphs(frame);
+        //presenter.drawGraphs(frame);
         Utils.matToBitmap(frame, bitmap);
         canvas.drawBitmap(bitmap, getTransformationMatrix(), null);
     }

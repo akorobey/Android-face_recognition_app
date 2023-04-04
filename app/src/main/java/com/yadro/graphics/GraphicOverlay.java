@@ -1,4 +1,4 @@
-package com.yadro.face_recognition_app;
+package com.yadro.graphics;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
