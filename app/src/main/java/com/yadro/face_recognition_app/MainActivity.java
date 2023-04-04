@@ -21,9 +21,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.google.mlkit.common.MlKitException;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.yadro.graphics.GraphicOverlay;
 import com.yadro.mlkit_detector.FaceDetectorProcessor;
 import com.yadro.own_detector.RecognizerProcessor;
@@ -31,6 +30,7 @@ import com.yadro.settings.Settings;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "FaceRecognition demo";
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     // CameraX usecases
     private PreviewView previewView;
     private GraphicOverlay graphicOverlay;
-    @Nullable private ProcessCameraProvider cameraProvider;
+    private ProcessCameraProvider cameraProvider;
     @Nullable private Preview previewUseCase;
     @Nullable private ImageAnalysis analysisUseCase;
     @Nullable private VisionImageProcessor imageProcessor;
@@ -118,24 +118,27 @@ public class MainActivity extends AppCompatActivity {
 
         cameraSelector = new CameraSelector.Builder().requireLensFacing(lensFacing).build();
         if(allPermissionsGranted()){
-            new ViewModelProvider(this)
-                    .get(CameraXViewModel.class)
-                    .getProcessCameraProvider()
-                    .observe(
-                            this,
-                            provider -> {
-                                cameraProvider = provider;
-                                try {
-                                    bindAllCameraUseCases();
-                                } catch (IOException | URISyntaxException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
+            startCamera();
         } else{
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
     }
 
+    private void startCamera() {
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        cameraProviderFuture.addListener(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    cameraProvider = cameraProviderFuture.get();
+                    bindAllCameraUseCases();
+                } catch (IOException | URISyntaxException | ExecutionException |
+                         InterruptedException e) {
+                                    throw new RuntimeException(e);
+                }
+            }
+        }, ContextCompat.getMainExecutor(this));
+    }
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putInt(LENS_FACING_KEY, lensFacing);;
@@ -149,19 +152,7 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
-                new ViewModelProvider(this)
-                        .get(CameraXViewModel.class)
-                        .getProcessCameraProvider()
-                        .observe(
-                                this,
-                                provider -> {
-                                    cameraProvider = provider;
-                                    try {
-                                        bindAllCameraUseCases();
-                                    } catch (IOException | URISyntaxException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                });
+                startCamera();
             } else {
                 Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
                 this.finish();

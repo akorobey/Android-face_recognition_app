@@ -103,7 +103,6 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         ArrayList<Pair<Integer, Float>> matches = gallery.getIDsByEmbeddings(allEmb);
 
         boolean allow_grow = mainApp.getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("AllowGrow", false);
-        System.out.println("Allow grow = " + allow_grow);
         for (int i = 0; i < matches.size(); ++i) {
             if (matches.get(i).first == gallery.unknownId) {
                 if (allow_grow) {
