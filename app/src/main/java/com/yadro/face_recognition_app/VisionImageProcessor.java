@@ -11,7 +11,7 @@ public interface VisionImageProcessor {
     void processBitmap(Bitmap bitmap, GraphicOverlay graphicOverlay);
 
     /** Processes ImageProxy image data, e.g. used for CameraX live preview case. */
-    void processImageProxy(ImageProxy image, GraphicOverlay graphicOverlay);
+    void processImageProxy(Bitmap bitmap, GraphicOverlay graphicOverlay);
 
     /** Stops the underlying machine learning model and release resources. */
     void stop();

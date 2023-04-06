@@ -55,6 +55,20 @@ public class BitmapUtils {
         return rotateBitmap(bmp, imageProxy.getImageInfo().getRotationDegrees(), false, false);
     }
 
+    @ExperimentalGetImage
+    public static Bitmap getBitmapRGBA_8888(ImageProxy imageProxy) {
+        Image image = imageProxy.getImage();
+        Image.Plane[] planes = image.getPlanes();
+        ByteBuffer buffer = planes[0].getBuffer();
+        int pixelStride = planes[0].getPixelStride();
+        int rowStride = planes[0].getRowStride();
+        int rowPadding = rowStride - pixelStride * image.getWidth();
+        Bitmap bitmap = Bitmap.createBitmap(image.getWidth() + rowPadding/pixelStride,
+                image.getHeight(), Bitmap.Config.ARGB_8888);
+        bitmap.copyPixelsFromBuffer(buffer);
+        return rotateBitmap(bitmap, imageProxy.getImageInfo().getRotationDegrees(), false, false);
+    }
+
     /** Rotates a bitmap if it is converted from a bytebuffer. */
     public static Bitmap rotateBitmap(
             Bitmap bitmap, int rotationDegrees, boolean flipX, boolean flipY) {

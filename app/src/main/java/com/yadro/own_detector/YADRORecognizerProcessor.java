@@ -11,40 +11,28 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.os.SystemClock;
 import android.util.Pair;
 
-import androidx.annotation.NonNull;
 import androidx.camera.core.ExperimentalGetImage;
-import androidx.camera.core.ImageProxy;
 
-import com.google.android.gms.tasks.Task;
-import com.google.mlkit.vision.common.InputImage;
-import com.yadro.face_recognition_app.MainActivity;
 import com.yadro.face_recognition_app.VisionImageProcessor;
 import com.yadro.gallery.AskToSave;
 import com.yadro.gallery.FaceGallery;
-import com.yadro.graphics.CameraImageGraphic;
 import com.yadro.graphics.FaceGraphic;
-import com.yadro.graphics.InferenceInfoGraphic;
-import com.yadro.graphics.MLKitFaceGraphic;
 import com.yadro.graphics.GraphicOverlay;
-import com.yadro.mlkit_detector.VisionProcessorBase;
 import com.yadro.tfmodels.BBox;
 import com.yadro.tfmodels.Face;
 import com.yadro.tfmodels.BlazeFace;
 import com.yadro.tfmodels.FaceRecognitionModel;
 import com.yadro.utils.AlignTransform;
-import com.yadro.utils.BitmapUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 
-public class RecognizerProcessor implements VisionImageProcessor {
+public class YADRORecognizerProcessor implements VisionImageProcessor {
     private static final String TAG = "FaceRecognitionProcessor";
     private BlazeFace detector;
     private FaceRecognitionModel recognizer;
@@ -56,7 +44,7 @@ public class RecognizerProcessor implements VisionImageProcessor {
 
     private Context mainApp;
 
-    public RecognizerProcessor(Context context) throws IOException, URISyntaxException {
+    public YADRORecognizerProcessor(Context context) throws IOException, URISyntaxException {
         this.mainApp = context;
         // Init Face Detection and Recognition models
         initModels();
@@ -134,12 +122,9 @@ public class RecognizerProcessor implements VisionImageProcessor {
 
     @Override
     @ExperimentalGetImage
-    public void processImageProxy(ImageProxy image, GraphicOverlay graphicOverlay) {
-        long startFrameTime = SystemClock.elapsedRealtime();
-        Bitmap bitmap = BitmapUtils.getBitmap(image);
+    public void processImageProxy(Bitmap bitmap, GraphicOverlay graphicOverlay) {
         // Detect faces
         assert bitmap != null;
-        long startDetectorTime = SystemClock.elapsedRealtime();
         ArrayList<BBox> boxes = detector.run(bitmap);
 
         // Recognize faces
@@ -167,14 +152,8 @@ public class RecognizerProcessor implements VisionImageProcessor {
             prefEditor.putBoolean("AllowGrow", false);
             prefEditor.apply();
         }
-        long endDetectorTime = SystemClock.elapsedRealtime();
-        long currentDetectorLatencyMs = endDetectorTime - startDetectorTime;
 
         // TODO render faces
-        graphicOverlay.clear();
-        if (bitmap != null) {
-            graphicOverlay.add(new CameraImageGraphic(graphicOverlay, bitmap, null));
-        }
 
 
         for (int i = 0; i < boxes.size(); ++i) {
@@ -182,18 +161,6 @@ public class RecognizerProcessor implements VisionImageProcessor {
                                new Face(AlignTransform.enlargeFaceRoi(boxes.get(i).face, bitmap.getWidth(),
                                        bitmap.getHeight(), 1.2f), gallery.getLabelByID(matches.get(i).first))));
         }
-
-        long endFrameTime = SystemClock.elapsedRealtime();
-        long currentFrameLatencyMs = endFrameTime - startFrameTime;
-        int fps = (int) (1000.f / (currentFrameLatencyMs));
-        graphicOverlay.add(
-                new InferenceInfoGraphic(
-                        graphicOverlay,
-                        currentFrameLatencyMs,
-                        currentDetectorLatencyMs,
-                        fps));
-        graphicOverlay.postInvalidate();
-        image.close();
     }
 
     @Override

@@ -3,7 +3,10 @@ package com.yadro.face_recognition_app;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.media.Image;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
 import android.view.View;
@@ -15,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.CameraInfoUnavailableException;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -23,13 +27,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.yadro.graphics.CameraImageGraphic;
 import com.yadro.graphics.GraphicOverlay;
-import com.yadro.mlkit_detector.FaceDetectorProcessor;
-import com.yadro.own_detector.RecognizerProcessor;
+import com.yadro.graphics.InferenceInfoGraphic;
+import com.yadro.mlkit_detector.MLKitRecognizerProcessor;
+import com.yadro.own_detector.YADRORecognizerProcessor;
 import com.yadro.settings.Settings;
+import com.yadro.utils.BitmapUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
@@ -64,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     // Load libraries
     public static final String OPENCV_LIBRARY_NAME = "opencv_java4";
     public static final String PRESENTER_LIBRARY_NAME = "presenter";
+    private Presenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,8 +87,10 @@ public class MainActivity extends AppCompatActivity {
             SharedPreferences.Editor prefEditor = settings.edit();
             prefEditor.putInt("Threads", 4);
             prefEditor.putString("Device", "CPU");
-            prefEditor.putString("Algorithm", "MLKit");
+            prefEditor.putString("Algorithm", "YADRO");
             prefEditor.putBoolean("AllowGrow", false);
+            prefEditor.putString("Monitors", "");
+            prefEditor.putBoolean("ShowFPS", true);
             prefEditor.apply();
         }
 
@@ -99,9 +110,11 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "Load presenter library");
         } catch (UnsatisfiedLinkError e) {
             Log.e("UnsatisfiedLinkError",
-                    "Failed to load native filters libraries\n" + e.toString());
+                    "Failed to load native presenter library\n" + e.toString());
             System.exit(1);
         }
+
+        presenter = new Presenter(settings.getString("Monitors", ""), 60);
 
         editMode = (ImageButton) findViewById(R.id.gallery_button);
         switchCamera = (ImageButton) findViewById(R.id.switch_camera);
@@ -178,6 +191,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+        System.out.println("Current monitors = " + settings.getString("Monitors", ""));
+        presenter = new Presenter(settings.getString("Monitors", ""), 60);
         try {
             bindAllCameraUseCases();
         } catch (IOException | URISyntaxException e) {
@@ -188,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        cameraProvider.unbindAll();
         if (imageProcessor != null) {
             imageProcessor.stop();
         }
@@ -196,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        cameraProvider.unbindAll();
         if (imageProcessor != null) {
             imageProcessor.stop();
         }
@@ -224,6 +241,8 @@ public class MainActivity extends AppCompatActivity {
         previewUseCase.setSurfaceProvider(previewView.getSurfaceProvider());
         cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, previewUseCase);
     }
+
+    @ExperimentalGetImage
     private void bindAnalysisUseCase() throws IOException, URISyntaxException {
         if (cameraProvider == null) {
             return;
@@ -237,12 +256,13 @@ public class MainActivity extends AppCompatActivity {
 
         Log.i(TAG, "Using Face Detector Processor");
         if (settings.getString("Algorithm", "MLKit").equals("MLKit")) {
-            imageProcessor = new FaceDetectorProcessor(this);
+            imageProcessor = new MLKitRecognizerProcessor(this);
         } else {
-            imageProcessor = new RecognizerProcessor(this);
+            imageProcessor = new YADRORecognizerProcessor(this);
         }
 
         ImageAnalysis.Builder builder = new ImageAnalysis.Builder()
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setTargetAspectRatio(AspectRatio.RATIO_16_9);
         analysisUseCase = builder.build();
@@ -266,7 +286,31 @@ public class MainActivity extends AppCompatActivity {
                         needUpdateGraphicOverlayImageSourceInfo = false;
                     }
 
-                    imageProcessor.processImageProxy(imageProxy, graphicOverlay);
+                    long startFrameTime = SystemClock.elapsedRealtime();
+                    Bitmap bitmap = BitmapUtils.getBitmapRGBA_8888(imageProxy);
+                    graphicOverlay.clear();
+                    if (bitmap != null) {
+                        graphicOverlay.add(new CameraImageGraphic(graphicOverlay, bitmap, presenter));
+                    }
+                    long startProcessorTime = SystemClock.elapsedRealtime();
+                    imageProcessor.processImageProxy(bitmap, graphicOverlay);
+
+                    // Draw performance metrics
+                    long endProcessorTime = SystemClock.elapsedRealtime();
+                    long currentProcessorLatencyMs = endProcessorTime - startProcessorTime;
+                    long currentFrameLatencyMs = endProcessorTime - startFrameTime;
+                    int fps = (int) (1000.f / (currentFrameLatencyMs));
+                    if (settings.getBoolean("ShowFPS", true)) {
+                        graphicOverlay.add(
+                                new InferenceInfoGraphic(
+                                        graphicOverlay,
+                                        currentFrameLatencyMs,
+                                        currentProcessorLatencyMs,
+                                        fps));
+                    }
+                    graphicOverlay.postInvalidate();
+                    imageProxy.close();
+
                 });
 
         cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, analysisUseCase);

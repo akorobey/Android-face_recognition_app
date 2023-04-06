@@ -12,7 +12,7 @@ public class Settings extends AppCompatActivity {
     RecyclerView settings;
 
     String [] allSettings = {"Управление галереей", "Управление мониторами", "Выбор устройства", "Число потоков (для CPU)",
-                             "Выбор алгоритма"};
+                             "Выбор алгоритма", "Метрики производительности"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

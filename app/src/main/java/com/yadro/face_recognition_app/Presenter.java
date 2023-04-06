@@ -4,9 +4,9 @@ import org.opencv.core.Mat;
 
 public class Presenter {
     private long presenterNativeObj;
-    private native long getPresenter(String keys);
-    public Presenter(String keys) {
-        presenterNativeObj = getPresenter(keys);
+    private native long getPresenter(String keys, int yPos);
+    public Presenter(String keys, int yPos) {
+        presenterNativeObj = getPresenter(keys, yPos);
     }
 
     private native void drawGraphs_(long presenterAddr, long matAddr);

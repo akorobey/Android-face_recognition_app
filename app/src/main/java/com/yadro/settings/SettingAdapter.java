@@ -84,6 +84,15 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.ViewHold
                 }
             });
         }
+        if (position == 1) {
+            viewHolder.getButton().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent newWindow = new Intent(context, Monitors.class);
+                    context.startActivity(newWindow);
+                }
+            });
+        }
         if (position == 2) {
             viewHolder.current.setText(settings.getString("Device", "Not defined"));
             viewHolder.getButton().setOnClickListener(new View.OnClickListener() {
@@ -207,6 +216,21 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.ViewHold
                                 }
                             });
                     popupMenu.show();
+                }
+            });
+        }
+        if (position == 5) {
+            if (settings.getBoolean("ShowFPS", true)) {
+                viewHolder.current.setText("ON");
+            } else {
+                viewHolder.current.setText("OFF");
+            }
+            viewHolder.getButton().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    prefEditor.putBoolean("ShowFPS", !settings.getBoolean("ShowFPS", true));
+                    prefEditor.apply();
+                    viewHolder.current.setText(viewHolder.current.getText().toString().equals("OFF") ? "ON" : "OFF");
                 }
             });
         }

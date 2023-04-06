@@ -5,9 +5,9 @@
 #include <jni.h>
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_com_yadro_face_1recognition_1app_Presenter_getPresenter(JNIEnv * env, jobject jobj, jstring keysJObj) {
+Java_com_yadro_face_1recognition_1app_Presenter_getPresenter(JNIEnv * env, jobject jobj, jstring keysJObj, jint yPos) {
     const char* keys = env->GetStringUTFChars(keysJObj, 0);
-    Presenter* presenter = new Presenter(keys);
+    Presenter* presenter = new Presenter(keys, yPos);
     return (jlong)presenter;
 }
 

@@ -21,17 +21,4 @@ public class Common {
         }
         return path;
     }
-
-    public static Path getDirectory(InputStream in, String dirName) {
-        String path = "";
-        Path plugins = null;
-        try {
-            plugins= Files.createTempDirectory(dirName);
-            //Files.copy(in, plugins, StandardCopyOption.REPLACE_EXISTING);
-//            path = plugins.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return plugins;
-    }
 }

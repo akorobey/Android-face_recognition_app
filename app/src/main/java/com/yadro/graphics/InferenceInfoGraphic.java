@@ -10,7 +10,6 @@ public class InferenceInfoGraphic extends GraphicOverlay.Graphic {
 
     private static final int TEXT_COLOR = Color.WHITE;
     private static final float TEXT_SIZE = 30.0f;
-
     private final Paint textPaint;
     private final GraphicOverlay overlay;
     private final long frameLatency;

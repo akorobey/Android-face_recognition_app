@@ -10,7 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -22,7 +21,7 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.google.mlkit.vision.face.FaceLandmark;
-import com.yadro.face_recognition_app.MainActivity;
+import com.yadro.face_recognition_app.VisionImageProcessor;
 import com.yadro.gallery.AskToSave;
 import com.yadro.gallery.FaceGallery;
 import com.yadro.graphics.MLKitFaceGraphic;
@@ -37,7 +36,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
+public class MLKitRecognizerProcessor implements VisionImageProcessor {
     private static final String TAG = "FaceDetectorProcessor";
     private final FaceDetector detector;
     FaceRecognitionModel recognizer;
@@ -46,8 +45,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
 
     private Context mainApp;
 
-    public FaceDetectorProcessor(Context context) throws IOException, URISyntaxException {
-        super(context);
+    public MLKitRecognizerProcessor(Context context) throws IOException, URISyntaxException {
         this.mainApp = context;
         FaceDetectorOptions options =
                 new FaceDetectorOptions.Builder()
@@ -90,7 +88,6 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         mainApp.startActivity(newWindow);
     }
 
-    @Override
     protected void onSuccess(@NonNull Bitmap originalCameraImage, @NonNull List<Face> faces, @NonNull GraphicOverlay graphicOverlay) {
         // TODO postprocess with scale to source image
         ArrayList<ArrayList<Float>> allEmb = new ArrayList<ArrayList<Float>>();
@@ -155,8 +152,20 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         return  dstBitmap;
     }
 
+
     @Override
-    protected void onFailure(@NonNull Exception e) {
-        Log.e(TAG, "Face detection failed " + e);
+    public void processBitmap(Bitmap bitmap, GraphicOverlay graphicOverlay) {
+
+    }
+
+    @Override
+    public void processImageProxy(Bitmap bitmap, GraphicOverlay graphicOverlay) {
+        Task<List<Face>> task = detectInImage(bitmap);
+        while (!task.isComplete());
+        onSuccess(bitmap, task.getResult(), graphicOverlay);
+    }
+
+    @Override
+    public void stop() {
     }
 }

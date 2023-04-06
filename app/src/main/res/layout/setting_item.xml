@@ -20,6 +20,7 @@
         android:id="@+id/current_state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
         android:elevation="3dp"
         android:textAlignment="center"
         app:layout_constraintBottom_toBottomOf="parent"

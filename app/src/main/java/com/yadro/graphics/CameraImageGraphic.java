@@ -25,7 +25,7 @@ public class CameraImageGraphic extends GraphicOverlay.Graphic {
     public void draw(Canvas canvas) {
         Mat frame = new Mat();
         Utils.bitmapToMat(bitmap, frame);
-        //presenter.drawGraphs(frame);
+        presenter.drawGraphs(frame);
         Utils.matToBitmap(frame, bitmap);
         canvas.drawBitmap(bitmap, getTransformationMatrix(), null);
     }
