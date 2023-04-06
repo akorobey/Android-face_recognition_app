@@ -21,7 +21,6 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.google.mlkit.vision.face.FaceLandmark;
-import com.yadro.face_recognition_app.VisionImageProcessor;
 import com.yadro.gallery.AskToSave;
 import com.yadro.gallery.FaceGallery;
 import com.yadro.graphics.MLKitFaceGraphic;
@@ -152,14 +151,8 @@ public class MLKitRecognizerProcessor implements VisionImageProcessor {
         return  dstBitmap;
     }
 
-
     @Override
     public void processBitmap(Bitmap bitmap, GraphicOverlay graphicOverlay) {
-
-    }
-
-    @Override
-    public void processImageProxy(Bitmap bitmap, GraphicOverlay graphicOverlay) {
         Task<List<Face>> task = detectInImage(bitmap);
         while (!task.isComplete());
         onSuccess(bitmap, task.getResult(), graphicOverlay);

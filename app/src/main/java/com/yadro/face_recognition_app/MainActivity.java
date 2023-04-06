@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
-import android.util.Size;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -21,11 +20,11 @@ import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.yadro.algorithms.VisionImageProcessor;
 import com.yadro.graphics.CameraImageGraphic;
 import com.yadro.graphics.GraphicOverlay;
 import com.yadro.graphics.InferenceInfoGraphic;
@@ -52,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
     ImageButton settingsButton;
 
     // CameraX usecases
-    private PreviewView previewView;
     private GraphicOverlay graphicOverlay;
     private ProcessCameraProvider cameraProvider;
     @Nullable private Preview previewUseCase;
@@ -118,10 +116,6 @@ public class MainActivity extends AppCompatActivity {
         switchCamera = (ImageButton) findViewById(R.id.switch_camera);
         settingsButton = (ImageButton) findViewById(R.id.settings);
 
-//        previewView = findViewById(R.id.preview_view);
-//        if (previewView == null) {
-//            Log.d(TAG, "previewView is null");
-//        }
         graphicOverlay = findViewById(R.id.graphic_overlay);
         if (graphicOverlay == null) {
             Log.d(TAG, "graphicOverlay is null");
@@ -225,21 +219,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void bindPreviewUseCase() {
-        if (cameraProvider == null) {
-            return;
-        }
-        if (previewUseCase != null) {
-            cameraProvider.unbind(previewUseCase);
-        }
-
-        Preview.Builder builder = new Preview.Builder().setTargetResolution(new Size(1280, 960));
-
-        previewUseCase = builder.build();
-        previewUseCase.setSurfaceProvider(previewView.getSurfaceProvider());
-        cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, previewUseCase);
-    }
-
     @ExperimentalGetImage
     private void bindAnalysisUseCase() throws IOException, URISyntaxException {
         if (cameraProvider == null) {
@@ -288,13 +267,17 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     long startFrameTime = SystemClock.elapsedRealtime();
+
+                    // Convert proxy to bitmap and add presenters
                     Bitmap bitmap = BitmapUtils.getBitmapRGBA_8888(imageProxy, isImageFlipped);
                     graphicOverlay.clear();
                     if (bitmap != null) {
                         graphicOverlay.add(new CameraImageGraphic(graphicOverlay, bitmap, presenter));
                     }
+
+                    // Start inference
                     long startProcessorTime = SystemClock.elapsedRealtime();
-                    imageProcessor.processImageProxy(bitmap, graphicOverlay);
+                    imageProcessor.processBitmap(bitmap, graphicOverlay);
 
                     // Draw performance metrics
                     long endProcessorTime = SystemClock.elapsedRealtime();

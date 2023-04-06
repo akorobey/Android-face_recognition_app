@@ -1,4 +1,4 @@
-package com.yadro.face_recognition_app;
+package com.yadro.algorithms;
 
 import android.graphics.Bitmap;
 import androidx.camera.core.ImageProxy;
@@ -9,9 +9,6 @@ import com.yadro.graphics.GraphicOverlay;
 public interface VisionImageProcessor {
     /** Processes a bitmap image. */
     void processBitmap(Bitmap bitmap, GraphicOverlay graphicOverlay);
-
-    /** Processes ImageProxy image data, e.g. used for CameraX live preview case. */
-    void processImageProxy(Bitmap bitmap, GraphicOverlay graphicOverlay);
 
     /** Stops the underlying machine learning model and release resources. */
     void stop();

@@ -15,7 +15,6 @@ import android.util.Pair;
 
 import androidx.camera.core.ExperimentalGetImage;
 
-import com.yadro.face_recognition_app.VisionImageProcessor;
 import com.yadro.gallery.AskToSave;
 import com.yadro.gallery.FaceGallery;
 import com.yadro.graphics.FaceGraphic;
@@ -114,15 +113,9 @@ public class YADRORecognizerProcessor implements VisionImageProcessor {
         return  dstBitmap;
     }
 
-
-    @Override
-    public void processBitmap(Bitmap bitmap, GraphicOverlay graphicOverlay) {
-
-    }
-
     @Override
     @ExperimentalGetImage
-    public void processImageProxy(Bitmap bitmap, GraphicOverlay graphicOverlay) {
+    public void processBitmap(Bitmap bitmap, GraphicOverlay graphicOverlay) {
         // Detect faces
         assert bitmap != null;
         ArrayList<BBox> boxes = detector.run(bitmap);

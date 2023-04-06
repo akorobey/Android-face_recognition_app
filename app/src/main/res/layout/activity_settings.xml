@@ -26,7 +26,7 @@
         android:background="@drawable/textlines"
         android:text="Настройки"
         android:textAlignment="center"
-        android:textSize="34sp"
+        android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
