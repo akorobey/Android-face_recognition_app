@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceLandmark;
 import com.google.mlkit.vision.face.FaceLandmark.LandmarkType;
+import com.yadro.gallery.FaceGallery;
 
 /**
  * Graphic instance for rendering face position, contour, and landmarks within the associated
@@ -19,19 +20,11 @@ public class MLKitFaceGraphic extends GraphicOverlay.Graphic {
     private static final float ID_TEXT_SIZE = 30.0f;
     private static final float ID_Y_OFFSET = 40.0f;
     private static final float BOX_STROKE_WIDTH = 5.0f;
-    private static final int NUM_COLORS = 10;
+    private static final int NUM_COLORS = 2;
     private static final int[][] COLORS =
             new int[][] {
                     // {Text color, background color}
-                    {Color.BLACK, Color.WHITE},
-                    {Color.WHITE, Color.MAGENTA},
-                    {Color.BLACK, Color.LTGRAY},
                     {Color.WHITE, Color.RED},
-                    {Color.WHITE, Color.BLUE},
-                    {Color.WHITE, Color.DKGRAY},
-                    {Color.BLACK, Color.CYAN},
-                    {Color.BLACK, Color.YELLOW},
-                    {Color.WHITE, Color.BLACK},
                     {Color.BLACK, Color.GREEN}
             };
 
@@ -96,7 +89,10 @@ public class MLKitFaceGraphic extends GraphicOverlay.Graphic {
         float yLabelOffset = - lineHeight;
 
         // Decide color based on face ID
-        int colorID = (face.getTrackingId() == null) ? 0 : Math.abs(face.getTrackingId() % NUM_COLORS);
+        int colorID = 1;
+        if (label.equals(FaceGallery.unknownLabel)) {
+            colorID = 0;
+        }
 
         // Calculate width and height of label box
         float textWidth = idPaints[colorID].measureText(label);

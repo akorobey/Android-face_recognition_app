@@ -14,7 +14,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 public class FaceGallery {
-    String unknownLabel = "Unknown";
+    public static String unknownLabel = "Unknown";
     public int unknownId = -1;
     float unknownDistance = 1.0F;
     ArrayList<GalleryObject> identities = null;

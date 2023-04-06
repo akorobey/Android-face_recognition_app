@@ -29,7 +29,7 @@ public class BitmapUtils {
     @RequiresApi(VERSION_CODES.LOLLIPOP)
     @Nullable
     @ExperimentalGetImage
-    public static Bitmap getBitmap(ImageProxy imageProxy) {
+    public static Bitmap getBitmap(ImageProxy imageProxy, boolean isImageFlipped) {
         Image image = imageProxy.getImage();
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer yBuffer = planes[0].getBuffer();
@@ -52,11 +52,11 @@ public class BitmapUtils {
 
         byte[] imageBytes = out.toByteArray();
         Bitmap bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-        return rotateBitmap(bmp, imageProxy.getImageInfo().getRotationDegrees(), false, false);
+        return rotateBitmap(bmp, imageProxy.getImageInfo().getRotationDegrees(), isImageFlipped);
     }
 
     @ExperimentalGetImage
-    public static Bitmap getBitmapRGBA_8888(ImageProxy imageProxy) {
+    public static Bitmap getBitmapRGBA_8888(ImageProxy imageProxy, boolean isImageFlipped) {
         Image image = imageProxy.getImage();
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
@@ -66,19 +66,23 @@ public class BitmapUtils {
         Bitmap bitmap = Bitmap.createBitmap(image.getWidth() + rowPadding/pixelStride,
                 image.getHeight(), Bitmap.Config.ARGB_8888);
         bitmap.copyPixelsFromBuffer(buffer);
-        return rotateBitmap(bitmap, imageProxy.getImageInfo().getRotationDegrees(), false, false);
+        return rotateBitmap(bitmap, imageProxy.getImageInfo().getRotationDegrees(), isImageFlipped);
     }
 
     /** Rotates a bitmap if it is converted from a bytebuffer. */
-    public static Bitmap rotateBitmap(
-            Bitmap bitmap, int rotationDegrees, boolean flipX, boolean flipY) {
+    public static Bitmap rotateBitmap(Bitmap bitmap, int rotationDegrees, boolean isImageFlipped) {
         Matrix matrix = new Matrix();
 
         // Rotate the image back to straight.
         matrix.postRotate(rotationDegrees);
 
         // Mirror the image along the X or Y axis.
-        matrix.postScale(flipX ? -1.0f : 1.0f, flipY ? -1.0f : 1.0f);
+        if (isImageFlipped) {
+            // to keep image upright on camera rotation
+            matrix.postScale(-1, 1);
+        } else {
+            matrix.postScale(1, 1);
+        }
         Bitmap rotatedBitmap =
                 Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 

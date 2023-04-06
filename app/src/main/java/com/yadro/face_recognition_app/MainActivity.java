@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -37,7 +36,6 @@ import com.yadro.utils.BitmapUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
     public ImageButton editMode;
     ImageButton switchCamera;
     ImageButton settingsButton;
-    public boolean allowGrow = false;
 
     // CameraX usecases
     private PreviewView previewView;
@@ -273,21 +270,21 @@ public class MainActivity extends AppCompatActivity {
                 // thus we can just runs the analyzer itself on main thread.
                 ContextCompat.getMainExecutor(this),
                 imageProxy -> {
+                    boolean isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT;
                     if (needUpdateGraphicOverlayImageSourceInfo) {
-                        boolean isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT;
                         int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
                         if (rotationDegrees == 0 || rotationDegrees == 180) {
                             graphicOverlay.setImageSourceInfo(
-                                    imageProxy.getWidth(), imageProxy.getHeight(), isImageFlipped);
+                                    imageProxy.getWidth(), imageProxy.getHeight(), false);
                         } else {
                             graphicOverlay.setImageSourceInfo(
-                                    imageProxy.getHeight(), imageProxy.getWidth(), isImageFlipped);
+                                    imageProxy.getHeight(), imageProxy.getWidth(), false);
                         }
                         needUpdateGraphicOverlayImageSourceInfo = false;
                     }
 
                     long startFrameTime = SystemClock.elapsedRealtime();
-                    Bitmap bitmap = BitmapUtils.getBitmapRGBA_8888(imageProxy);
+                    Bitmap bitmap = BitmapUtils.getBitmapRGBA_8888(imageProxy, isImageFlipped);
                     graphicOverlay.clear();
                     if (bitmap != null) {
                         graphicOverlay.add(new CameraImageGraphic(graphicOverlay, bitmap, presenter));

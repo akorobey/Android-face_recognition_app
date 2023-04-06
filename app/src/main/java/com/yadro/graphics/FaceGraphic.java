@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+import com.yadro.gallery.FaceGallery;
 import com.yadro.tfmodels.Face;
 
 public class FaceGraphic extends GraphicOverlay.Graphic {
@@ -13,19 +14,11 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
     private static final float ID_TEXT_SIZE = 30.0f;
     private static final float ID_Y_OFFSET = 40.0f;
     private static final float BOX_STROKE_WIDTH = 5.0f;
-    private static final int NUM_COLORS = 10;
+    private static final int NUM_COLORS = 2;
     private static final int[][] COLORS =
             new int[][] {
                     // {Text color, background color}
-                    {Color.BLACK, Color.WHITE},
-                    {Color.WHITE, Color.MAGENTA},
-                    {Color.BLACK, Color.LTGRAY},
                     {Color.WHITE, Color.RED},
-                    {Color.WHITE, Color.BLUE},
-                    {Color.WHITE, Color.DKGRAY},
-                    {Color.BLACK, Color.CYAN},
-                    {Color.BLACK, Color.YELLOW},
-                    {Color.WHITE, Color.BLACK},
                     {Color.BLACK, Color.GREEN}
             };
 
@@ -87,7 +80,10 @@ public class FaceGraphic extends GraphicOverlay.Graphic {
         float yLabelOffset = - lineHeight;
 
         // Decide color based on face ID
-        int colorID = (int) Math.abs(Math.random() % NUM_COLORS);
+        int colorID = 1;
+        if (face.label.equals(FaceGallery.unknownLabel)) {
+            colorID = 0;
+        }
 
         // Calculate width and height of label box
         float textWidth = idPaints[colorID].measureText(face.label);
