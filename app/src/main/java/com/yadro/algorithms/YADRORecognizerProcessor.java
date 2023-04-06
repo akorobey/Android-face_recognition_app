@@ -1,4 +1,4 @@
-package com.yadro.own_detector;
+package com.yadro.algorithms;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.yadro.utils.Common.getResourcePath;
@@ -82,10 +82,10 @@ public class YADRORecognizerProcessor implements VisionImageProcessor {
         mainApp.startActivity(newWindow);
     }
 
-    protected  Bitmap getFaceFromImage(Bitmap source, BBox box) {
-        int inputWidth = source.getWidth();
-        int inputHeight = source.getHeight();
-        Rect faceRect = AlignTransform.enlargeFaceRoi(box.face, inputWidth, inputHeight, 1.2f);
+    protected  Bitmap getFaceFromImage(Bitmap source, BBox box, int inputWidth, int inputHeight) {
+        int imageWidth = source.getWidth();
+        int imageHeight = source.getHeight();
+        Rect faceRect = AlignTransform.enlargeFaceRoi(box.face, imageWidth, imageHeight, 1.2f);
         PointF rotationCenter = new PointF((faceRect.left + faceRect.right) * 0.5f, (faceRect.top + faceRect.bottom) * 0.5f);
 
         PointF leftEye = box.leftEye;
@@ -130,7 +130,7 @@ public class YADRORecognizerProcessor implements VisionImageProcessor {
         // Recognize faces
         ArrayList<ArrayList<Float>> allEmb = new ArrayList<ArrayList<Float>>();
         for (BBox box : boxes) {
-            Bitmap rotatedFace = getFaceFromImage(bitmap, box);
+            Bitmap rotatedFace = getFaceFromImage(bitmap, box, recognizer.inputWidth, recognizer.inputHeight);
             ArrayList<Float> embeddings = recognizer.run(rotatedFace);
             allEmb.add(embeddings);
         }
@@ -142,7 +142,7 @@ public class YADRORecognizerProcessor implements VisionImageProcessor {
         for (int i = 0; i < matches.size(); ++i) {
             if (matches.get(i).first == gallery.unknownId) {
                 if (allow_grow) {
-                    startAskToSaveActivity(getFaceFromImage(bitmap, boxes.get(i)));
+                    startAskToSaveActivity(getFaceFromImage(bitmap, boxes.get(i), 300, 300));
                 }
             }
         }
@@ -154,7 +154,6 @@ public class YADRORecognizerProcessor implements VisionImageProcessor {
         }
 
         // TODO render faces
-
 
         for (int i = 0; i < boxes.size(); ++i) {
             graphicOverlay.add(new FaceGraphic(graphicOverlay,

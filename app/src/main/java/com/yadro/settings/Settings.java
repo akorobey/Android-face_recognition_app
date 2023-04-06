@@ -8,11 +8,10 @@ import android.os.Bundle;
 import com.yadro.face_recognition_app.R;
 
 public class Settings extends AppCompatActivity {
-
     RecyclerView settings;
 
     String [] allSettings = {"Управление галереей", "Управление мониторами", "Выбор устройства", "Число потоков (для CPU)",
-                             "Выбор алгоритма", "Метрики производительности"};
+                             "Выбор алгоритма", "Метрики производительности", "Разрешение экрана"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

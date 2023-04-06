@@ -28,10 +28,10 @@ abstract public class TFLiteModel<T> {
     protected final CompatibilityList compatList = new CompatibilityList();
     protected int nthreads;
     protected String device = "CPU";
-    protected int imageWidth;
-    protected int imageHeight;
-    protected int inputWidth;
-    protected int inputHeight;
+    public int imageWidth;
+    public int imageHeight;
+    public int inputWidth;
+    public int inputHeight;
     protected ImageProcessor imgProcessor;
     protected ArrayList<String> outputNames = new ArrayList<String>();
     protected ArrayList<DataType> outputDataTypes  = new ArrayList<DataType>();

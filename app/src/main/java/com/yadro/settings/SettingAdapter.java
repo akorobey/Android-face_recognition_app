@@ -234,6 +234,38 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.ViewHold
                 }
             });
         }
+        if (position == 6) {
+            viewHolder.current.setText(settings.getString("Resolution", "Not defined"));
+            viewHolder.getButton().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PopupMenu popupMenu = new PopupMenu(context, v);
+                    popupMenu.inflate(R.menu.resolution_menu);
+
+                    popupMenu
+                            .setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                                @Override
+                                public boolean onMenuItemClick(MenuItem item) {
+                                    switch (item.getItemId()) {
+                                        case R.id.low:
+                                            viewHolder.current.setText("640x480");
+                                            prefEditor.putString("Resolution", "640x480");
+                                            prefEditor.apply();
+                                            return true;
+                                        case R.id.middle:
+                                            viewHolder.current.setText("1280x720");
+                                            prefEditor.putString("Resolution", "1280x720");
+                                            prefEditor.apply();
+                                            return true;
+                                        default:
+                                            return false;
+                                    }
+                                }
+                            });
+                    popupMenu.show();
+                }
+            });
+        }
     }
 
     // Return the size of your dataset (invoked by the layout manager)

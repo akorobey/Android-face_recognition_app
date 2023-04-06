@@ -1,4 +1,4 @@
-package com.yadro.mlkit_detector;
+package com.yadro.algorithms;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -92,7 +92,7 @@ public class MLKitRecognizerProcessor implements VisionImageProcessor {
         // TODO postprocess with scale to source image
         ArrayList<ArrayList<Float>> allEmb = new ArrayList<ArrayList<Float>>();
         for (Face face : faces) {
-            Bitmap rotatedFace = getFaceFromImage(originalCameraImage, face);
+            Bitmap rotatedFace = getFaceFromImage(originalCameraImage, face, recognizer.inputWidth, recognizer.inputHeight);
             ArrayList<Float> embeddings = recognizer.run(rotatedFace);
             allEmb.add(embeddings);
         }
@@ -103,7 +103,7 @@ public class MLKitRecognizerProcessor implements VisionImageProcessor {
         for (int i = 0; i < matches.size(); ++i) {
             if (matches.get(i).first == gallery.unknownId) {
                 if (allow_grow) {
-                    startAskToSaveActivity(getFaceFromImage(originalCameraImage, faces.get(i)));
+                    startAskToSaveActivity(getFaceFromImage(originalCameraImage, faces.get(i), 300, 300));
                 }
             }
         }
@@ -120,10 +120,10 @@ public class MLKitRecognizerProcessor implements VisionImageProcessor {
         }
     }
 
-    protected  Bitmap getFaceFromImage(Bitmap source, Face face) {
-        int inputWidth = source.getWidth();
-        int inputHeight = source.getHeight();
-        Rect faceRect = AlignTransform.enlargeFaceRoi(face.getBoundingBox(), inputWidth, inputHeight, 1.0f);
+    protected  Bitmap getFaceFromImage(Bitmap source, Face face, int inputWidth, int inputHeight) {
+        int imageWidth = source.getWidth();
+        int imageHeight = source.getHeight();
+        Rect faceRect = AlignTransform.enlargeFaceRoi(face.getBoundingBox(), imageWidth, imageHeight, 1.0f);
         PointF rotationCenter = new PointF((faceRect.left + faceRect.right) * 0.5f, (faceRect.top + faceRect.bottom) * 0.5f);
 
         FaceLandmark leftEye = face.getLandmark(FaceLandmark.LEFT_EYE);

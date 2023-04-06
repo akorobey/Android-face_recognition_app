@@ -29,8 +29,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.yadro.graphics.CameraImageGraphic;
 import com.yadro.graphics.GraphicOverlay;
 import com.yadro.graphics.InferenceInfoGraphic;
-import com.yadro.mlkit_detector.MLKitRecognizerProcessor;
-import com.yadro.own_detector.YADRORecognizerProcessor;
+import com.yadro.algorithms.MLKitRecognizerProcessor;
+import com.yadro.algorithms.YADRORecognizerProcessor;
 import com.yadro.settings.Settings;
 import com.yadro.utils.BitmapUtils;
 
@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
             prefEditor.putBoolean("AllowGrow", false);
             prefEditor.putString("Monitors", "");
             prefEditor.putBoolean("ShowFPS", true);
+            prefEditor.putString("Resolution", "1280x720");
             prefEditor.apply();
         }
 
@@ -257,11 +258,14 @@ public class MainActivity extends AppCompatActivity {
         } else {
             imageProcessor = new YADRORecognizerProcessor(this);
         }
-
+        int aspectRatio = AspectRatio.RATIO_4_3;
+        if (settings.getString("Resolution", "640x480").equals("1280x720")) {
+            aspectRatio = AspectRatio.RATIO_16_9;
+        }
         ImageAnalysis.Builder builder = new ImageAnalysis.Builder()
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .setTargetAspectRatio(AspectRatio.RATIO_16_9);
+                .setTargetAspectRatio(aspectRatio);
         analysisUseCase = builder.build();
 
         needUpdateGraphicOverlayImageSourceInfo = true;

@@ -39,6 +39,8 @@ public class AskToSave extends AppCompatActivity {
             byte[] byteArr = getIntent().getExtras().getByteArray("new_face");
             Bitmap bitmap = BitmapFactory.decodeByteArray(byteArr, 0, byteArr.length);
 
+            System.out.println("Ask to save Image View : " + newFaceImage.getWidth() + "x" + newFaceImage.getHeight());
+            System.out.println("Ask to save Bitmap : " + bitmap.getWidth() + "x" + bitmap.getHeight());
             newFaceImage.setImageBitmap(bitmap);
         }
 

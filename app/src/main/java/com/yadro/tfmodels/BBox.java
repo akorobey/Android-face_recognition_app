@@ -10,4 +10,3 @@ public class BBox {
     public PointF rightEye;
     public float confidence;
 }
-

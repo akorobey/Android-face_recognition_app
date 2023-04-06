@@ -13,7 +13,6 @@ import androidx.annotation.RequiresApi;
 import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageProxy;
 
-
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
@@ -55,6 +54,7 @@ public class BitmapUtils {
         return rotateBitmap(bmp, imageProxy.getImageInfo().getRotationDegrees(), isImageFlipped);
     }
 
+    /** Converts a RGBA_8888 image from CameraX API to a bitmap. */
     @ExperimentalGetImage
     public static Bitmap getBitmapRGBA_8888(ImageProxy imageProxy, boolean isImageFlipped) {
         Image image = imageProxy.getImage();
