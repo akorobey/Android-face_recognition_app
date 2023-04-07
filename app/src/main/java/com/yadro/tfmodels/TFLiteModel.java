@@ -3,8 +3,6 @@ package com.yadro.tfmodels;
 import android.graphics.Bitmap;
 import android.util.Log;
 
-import com.yadro.utils.FrameMetadata;
-
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.gpu.CompatibilityList;
 import org.tensorflow.lite.gpu.GpuDelegate;
@@ -36,8 +34,6 @@ abstract public class TFLiteModel<T> {
     protected ArrayList<String> outputNames = new ArrayList<String>();
     protected ArrayList<DataType> outputDataTypes  = new ArrayList<DataType>();
     protected ArrayList<int[]> outputShapes  = new ArrayList<int[]>();
-
-    protected FrameMetadata metadata;
 
     private MappedByteBuffer loadModelFile(String modelPath) throws IOException {
         Log.i(TAG, "Load asset model file: " + modelPath);

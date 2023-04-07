@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             System.exit(1);
         }
 
-        presenter = new Presenter(settings.getString("Monitors", ""), 60);
+        presenter = new Presenter(settings.getString("Monitors", ""), 100);
 
         editMode = (ImageButton) findViewById(R.id.gallery_button);
         switchCamera = (ImageButton) findViewById(R.id.switch_camera);
@@ -183,8 +183,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        System.out.println("Current monitors = " + settings.getString("Monitors", ""));
-        presenter = new Presenter(settings.getString("Monitors", ""), 60);
+        presenter = new Presenter(settings.getString("Monitors", ""), 100);
         try {
             bindAllCameraUseCases();
         } catch (IOException | URISyntaxException e) {
