@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
     // CameraX usecases
     private GraphicOverlay graphicOverlay;
     private ProcessCameraProvider cameraProvider;
-    @Nullable private Preview previewUseCase;
     @Nullable private ImageAnalysis analysisUseCase;
     @Nullable private VisionImageProcessor imageProcessor;
     private int lensFacing = CameraSelector.LENS_FACING_FRONT;

@@ -28,9 +28,6 @@ public class FaceRecognitionModel extends TFLiteModel<ArrayList<Float>> {
     private float[] scale = {127.5f, 127.5f, 127.5f};
     int numEmbeddings = 192;
 
-    ArrayList<float[]> anchors = new ArrayList<>();
-
-
     public FaceRecognitionModel(final String modelFile, final String device, final int nthreads) {
         super(modelFile, device, nthreads);
         getInputsOutputsInfo();
@@ -46,7 +43,6 @@ public class FaceRecognitionModel extends TFLiteModel<ArrayList<Float>> {
 
     @Override
     protected void getInputsOutputsInfo() {
-        int inputsCount = interpreter.getInputTensorCount();
         Log.i(TAG, "Inputs:");
         Tensor tensor = interpreter.getInputTensor(0);
         Log.i(TAG, "\t" + tensor.name() + ": " + String.valueOf(tensor.dataType()) + " " + Arrays.toString(tensor.shape()));

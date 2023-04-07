@@ -5,10 +5,10 @@ plugins {
 android {
     signingConfigs {
         release {
-            storeFile file('C:\\Users\\a.korobeynikov\\AndroidStudioProjects\\keystores\\face_app_keystore.jks')
-            storePassword 'alex8686'
-            keyAlias 'MARCEL'
-            keyPassword 'alex8686'
+            storeFile file('C:\\Users\\a.korobeynikov\\AndroidStudioProjects\\face_recognition_app\\application.jks')
+            storePassword 'Strong_a1ex_di'
+            keyAlias 'YADRO'
+            keyPassword 'Strong_a1ex_di'
         }
     }
     namespace 'com.yadro.face_recognition_app'
@@ -22,7 +22,19 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ext.getPathFromProperty = { propName ->
+            def propVar = '-D' + propName + '='
+            if (project.hasProperty(propName)) {
+                propVar += project.property(propName)
+            } else {
+                propVar += 'path-not-specified'
+            }
+            return propVar
+        }
         externalNativeBuild {
+            def OpenCV_DIR = getPathFromProperty('OpenCV_DIR')
+            def OMZ_DIR = getPathFromProperty('OMZ_DIR')
+
             cmake {
                 cppFlags '-std=c++17'
                 arguments '-DANDROID_STL=c++_shared'

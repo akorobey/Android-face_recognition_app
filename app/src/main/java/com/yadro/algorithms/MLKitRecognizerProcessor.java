@@ -113,7 +113,6 @@ public class MLKitRecognizerProcessor implements VisionImageProcessor {
             prefEditor.apply();
         }
 
-
         for (int i = 0; i < faces.size(); ++i) {
             graphicOverlay.add(new MLKitFaceGraphic(graphicOverlay, faces.get(i), gallery.getLabelByID(matches.get(i).first)));
         }

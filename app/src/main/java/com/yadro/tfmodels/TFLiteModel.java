@@ -25,7 +25,7 @@ abstract public class TFLiteModel<T> {
     protected final Interpreter.Options options = new Interpreter.Options();
     protected final CompatibilityList compatList = new CompatibilityList();
     protected int nthreads;
-    protected String device = "CPU";
+    protected String device;
     public int imageWidth;
     public int imageHeight;
     public int inputWidth;
@@ -37,7 +37,7 @@ abstract public class TFLiteModel<T> {
 
     private MappedByteBuffer loadModelFile(String modelPath) throws IOException {
         Log.i(TAG, "Load asset model file: " + modelPath);
-        File file=new File(modelPath);
+        File file = new File(modelPath);
         FileInputStream inputStream = new FileInputStream(file);
         FileChannel fileChannel = inputStream.getChannel();
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileChannel.size());
@@ -54,19 +54,22 @@ abstract public class TFLiteModel<T> {
             System.exit(1);
         }
 
-        readModel(modelFile);
+        readModel();
     }
 
-    protected void readModel(final String modelFile) throws IllegalArgumentException {
+    protected void readModel() throws IllegalArgumentException {
         Log.i(TAG, "Reading model");
-        if(device.equals("GPU") && compatList.isDelegateSupportedOnThisDevice()){
+        if(device.equals("GPU")){
             // if the device has a supported GPU, add the GPU delegate
             GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
             GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
             options.addDelegate(gpuDelegate);
+            Log.i(TAG, "Delegate: GPU");
         } else if (device.equals("CPU")) {
             // if the GPU is not supported, run on CPU with specified number of threads
             options.setNumThreads(nthreads);
+            options.setUseXNNPACK(true);
+            Log.i(TAG, "Delegate: CPU");
         } else {
             throw new IllegalArgumentException("Unknown device provided: " + device);
         }
