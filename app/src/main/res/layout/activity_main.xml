@@ -20,7 +20,13 @@
     <com.yadro.graphics.GraphicOverlay
         android:id="@+id/graphic_overlay"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
 
     </com.yadro.graphics.GraphicOverlay>
 
@@ -34,14 +40,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/settings" />
 
+
     <ImageButton
         android:id="@+id/gallery_button"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:background="@drawable/button_shape_oval"
         android:onClick="setAllowGrow"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.334"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/face_mid" />
 
@@ -52,38 +60,26 @@
         android:background="@drawable/button_shape_neitral_oval"
         android:onClick="setSwitchCamera"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/gallery_button"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/graphic_overlay"
         app:srcCompat="@drawable/switch_camera"
         tools:ignore="OnClick" />
 
-
     <Button
-        android:id="@+id/button_right"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="openFile"
-        android:text="@string/take_photo"
-        android:visibility="gone"
+        android:id="@+id/buttonPhoto"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:background="@drawable/button_shape_neitral_oval"
+        android:onClick="makePhoto"
+        android:text="Screen"
+        android:textAlignment="center"
+        android:textSize="8sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/button_left"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.928" />
-
-    <Button
-        android:id="@+id/button_left"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="captureVideo"
-        android:text="@string/start_capture"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button_right"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.928" />
+        app:layout_constraintEnd_toStartOf="@+id/settings"
+        app:layout_constraintHorizontal_bias="0.505"
+        app:layout_constraintStart_toEndOf="@+id/gallery_button"
+        tools:visibility="visible" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

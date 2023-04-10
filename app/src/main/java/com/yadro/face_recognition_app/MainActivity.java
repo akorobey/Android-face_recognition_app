@@ -1,13 +1,20 @@
 package com.yadro.face_recognition_app;
 
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -33,8 +40,14 @@ import com.yadro.algorithms.YADRORecognizerProcessor;
 import com.yadro.settings.Settings;
 import com.yadro.utils.BitmapUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
@@ -49,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     public ImageButton editMode;
     ImageButton switchCamera;
     ImageButton settingsButton;
+    Button btnPhoto;
 
     // CameraX usecases
     private GraphicOverlay graphicOverlay;
@@ -59,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     private final String LENS_FACING_KEY = "LENS_FACING";
     private boolean needUpdateGraphicOverlayImageSourceInfo;
     private CameraSelector cameraSelector;
+    private boolean saveScreen = false;
 
     // Settings
     SharedPreferences settings;
@@ -114,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
         editMode = (ImageButton) findViewById(R.id.gallery_button);
         switchCamera = (ImageButton) findViewById(R.id.switch_camera);
         settingsButton = (ImageButton) findViewById(R.id.settings);
+        btnPhoto = (Button)findViewById(R.id.buttonPhoto);
 
         graphicOverlay = findViewById(R.id.graphic_overlay);
         if (graphicOverlay == null) {
@@ -277,6 +293,9 @@ public class MainActivity extends AppCompatActivity {
                     long startProcessorTime = SystemClock.elapsedRealtime();
                     imageProcessor.processBitmap(bitmap, graphicOverlay);
 
+                    // Save if needed
+                    saveScreenImage(bitmap);
+
                     // Draw performance metrics
                     long endProcessorTime = SystemClock.elapsedRealtime();
                     long currentProcessorLatencyMs = endProcessorTime - startProcessorTime;
@@ -296,6 +315,32 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, analysisUseCase);
+    }
+
+    private void saveScreenImage(Bitmap bitmap) {
+        if (saveScreen) {
+            DateFormat df = new SimpleDateFormat("d_M_yyyy_HH_mm_ss");
+            String date = df.format(Calendar.getInstance().getTime());
+            File directory = new File(Environment.getExternalStorageDirectory().toString() +
+                    File.separator + "Pictures" + File.separator + "FaceRecognition");
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+            String mPath = Environment.getExternalStorageDirectory().toString()+
+                    "/Pictures/FaceRecognition/screenshot-" + date + ".png";
+
+            File imageFile = new File(mPath);
+
+            FileOutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(imageFile);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            Toast.makeText(this, "Файл сохранен в " + mPath, Toast.LENGTH_SHORT).show();
+            saveScreen = false;
+        }
     }
 
     public void setSwitchCamera(View view) {
@@ -331,5 +376,20 @@ public class MainActivity extends AppCompatActivity {
     public void openSettings(View view) {
         Intent newWindow = new Intent(this, Settings.class);
         startActivity(newWindow);
+    }
+
+    public void makePhoto(View view) {
+        buttonAnimator(btnPhoto);
+        saveScreen = true;
+    }
+    private void buttonAnimator(View view) {
+        ObjectAnimator scaleDown = ObjectAnimator.ofPropertyValuesHolder(
+                view,
+                PropertyValuesHolder.ofFloat("scaleY", 1.1f),
+                PropertyValuesHolder.ofFloat("scaleX", 1.1f));
+        scaleDown.setDuration(50);
+        scaleDown.setRepeatCount(1);
+        scaleDown.setRepeatMode(ObjectAnimator.REVERSE);
+        scaleDown.start();
     }
 }
